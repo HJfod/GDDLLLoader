@@ -12,7 +12,6 @@
 
 const char* AppName = "ModLdr Installer";
 const char* DataFile = ".gmdpath";
-DWORD GD_PID = 0;
 
 // #define NOMSGBOX
 
@@ -77,12 +76,17 @@ enum err {
     FILE_NOT_FOUND,
     GD_PATH_NOT_VALID,
     INJECT_ERROR,
-    CANT_OPEN_GD
+    CANT_OPEN_GD,
+    STOPPED,
+    GD_RUNNING,
+    CANT_BACKUP,
+    CANT_UNINSTALL
 };
 
-const char* req_files[4] = {
+const char* req_files[5] = {
     "ModLdr.dll",
     "MinHook.x86.dll",
+    "libcurl.dll",
     "DL_mods.png|resources",
     "DL_folder.png|resources"
 };
@@ -127,7 +131,12 @@ int InjectDLL(const int &pid, const std::string &DLL_Path) {
 }
 
 int main(int argc, char* argv[]) {
-    
+    #ifdef UNINSTALL
+        SetConsoleTitleA("Uninstaller");
+    #else
+        SetConsoleTitleA("Installer");
+    #endif
+
     std::cout << "MsgBox: " <<
     #ifdef NOMSGBOX
         0
@@ -136,6 +145,8 @@ int main(int argc, char* argv[]) {
     #endif
     << std::endl;
     std::cout << "PID: " << _getpid() << std::endl;
+
+    ////////////////////////////
 
     std::string GDDataPath = "";
 
@@ -174,6 +185,8 @@ int main(int argc, char* argv[]) {
 
     ////////////////////////////
 
+    #ifndef UNINSTALL
+
     std::cout << "Checking required files...";
 
     for (std::string f : req_files) {
@@ -182,47 +195,161 @@ int main(int argc, char* argv[]) {
     }
     
     std::cout << " Success" << std::endl;
+
+    #endif
     
     ////////////////////////////
 
     std::cout << "Checking GD status...";
 
-    if (!methods::proc_running("GeometryDash.exe", &GD_PID))
-        throwErr("GD isn't running!", err::FILE_NOT_FOUND);
+    if (!methods::proc_running("GeometryDash.exe"))
+        std::cout << " Success" << std::endl;
+    else {
+        #ifdef UNINSTALL
 
-    std::cout << " Success (GD PID: " << GD_PID << ")" << std::endl;
+            std::cout << " Failed" << std::endl;
+
+            throwErr("Please close GD to uninstall.", err::GD_RUNNING);
+
+        #else
+
+            std::cout << " Failed" << std::endl;
+
+            throwErr("Please close GD to install.", err::GD_RUNNING);
+
+        #endif
+    }
     
     ////////////////////////////
+    
+    std::cout 
+        << "\n"
+        #ifdef UNINSTALL
+
+        << "Path: " << GDDataPath
+        << "\n\n"
+        << "Proceed with uninstallation? (Y/N) ";
+
+        #else
+
+        << "Installation path: " << GDDataPath
+        << "\n"
+        << "If you'd like to change the installation path, quit the installer and change the path in the .gmdpath file"
+        << "\n\n"
+        << "Proceed with installation? (Y/N) ";
+
+        #endif
+
+    std::string proceed;
+    std::cin >> proceed;
+
+    if (methods::lower(proceed) != "y") {
+        std::cout << "Aborting..." << std::endl;
+        return err::STOPPED;
+    }
+
+    std::string GDDataFolder = GDDataPath.substr(0, GDDataPath.find_last_of("\\"));
+
+    ////////////////////////////
+
+    #ifndef UNINSTALL
+
+    std::cout << "Checking MegaHack v6...";
+
+    if (std::filesystem::exists(GDDataFolder + "\\absolutedlls")) {
+        std::cout << " Found" << std::endl;
+
+        std::cout << "Adding DLL...";
+
+        std::string data = methods::fread(GDDataFolder + "\\absolutedlls");
+
+        data += "\nModLdr.dll";
+
+        methods::fsave(GDDataFolder + "\\absolutedlls", data);
+
+        std::cout << " Success" << std::endl;
+    } else {
+        std::cout << " Not found" << std::endl;
+        std::cout << "Backing up files...";
+
+        if (methods::fcopy(GDDataFolder + "\\libcurl.dll", GDDataFolder + "\\libcurl.dll.bak") != METH_SUCCESS) {
+            std::cout << " Failed" << std::endl;
+            throwErr("Unable to back up libcurl.dll!", err::CANT_BACKUP);
+        }
+
+        std::cout << " Success" << std::endl;
+    }
+
+    #endif
+
+    ////////////////////////////
+
+    #ifdef UNINSTALL
+
+    std::cout << "Removing files...";
+
+    if (!std::filesystem::exists(GDDataFolder + "\\libcurl.dll.bak")) {
+        std::cout << " Failed" << std::endl;
+        throwErr("Backup of libcurl.dll not found! (Unable to uninstall)", err::CANT_UNINSTALL);
+    }
+
+    methods::fcopy(GDDataFolder + "\\libcurl.dll.bak", GDDataFolder + "\\libcurl.dll");
+    
+    if (remove((GDDataFolder + "\\ModLdr.dll").c_str()) != 0) {
+        std::cout << " Failed" << std::endl;
+        throwErr("Unable to delete ModLdr.dll!", err::CANT_UNINSTALL);
+    }
+
+    if (remove((GDDataFolder + "\\Resources\\DL_mods.png").c_str()) != 0) {
+        std::cout << " Failed" << std::endl;
+        throwErr("Unable to delete DL_mods.png!", err::CANT_UNINSTALL);
+    }
+
+    if (remove((GDDataFolder + "\\Resources\\DL_folder.png").c_str()) != 0) {
+        std::cout << " Failed" << std::endl;
+        throwErr("Unable to delete DL_folder.png!", err::CANT_UNINSTALL);
+    }
+
+    std::cout << " Success" << std::endl;
+
+    std::cout
+        << "\nWarning: Did not remove MinHook.x86.dll due to other mods possibly depending on it."
+        << "\nFor complete uninstallation, you will have to manually remove it."
+        << std::endl;
+
+    #else
 
     std::cout << "Moving files...";
 
-    for (int i = 1; i < (sizeof(req_files)/sizeof(*req_files)); i++) {
+    for (int i = 0; i < (sizeof(req_files)/sizeof(*req_files)); i++) {
         std::string act = req_files[i];
         if (std::string(req_files[i]).find("|") != std::string::npos)
             act = act.substr(act.find_first_of("|") + 1) + "\\" + act.substr(0, act.find_first_of("|"));
         
-        std::string nMHpath = GDDataPath.substr(0, GDDataPath.find_last_of("\\") + 1) + act;
+        std::string nMHpath = GDDataFolder + "\\" + act;
         if (!methods::fexists(nMHpath))
             if (methods::fcopy(act == req_files[i] ? act : act.substr(act.find_first_of("\\") + 1), nMHpath) != METH_SUCCESS)
                 throwErr("There was an error copying files (METH_COPY_FROM_DOESNT_EXIST, probably)", err::FILE_NOT_FOUND);
     }
 
-    std::cout << " Success" << std::endl;
-    
-    ////////////////////////////
+    methods::fcopy("libcurl.dll", GDDataFolder + "\\libcurl.dll");
 
-    std::cout << "Injecting DLL...";
-
-    int dll_suc = InjectDLL(GD_PID, methods::workdir() + "\\" + req_files[0]);
-    if (dll_suc != INJECT_SUCCESS)
-        throwErr("Unable to inject DLL! (Error code: " + std::to_string(dll_suc) + ")", err::INJECT_ERROR);
-    
     std::cout << " Success" << std::endl;
+
+    #endif
     
     ////////////////////////////
     
     #ifndef NOMSGBOX
-        MessageBoxA(NULL, "Succesfully loaded! :)", AppName, MB_OK);
+        #ifdef UNINSTALL
+
+            MessageBoxA(nullptr, "Succesfully uninstalled! :)", AppName, MB_OK);
+
+        #else
+            
+            MessageBoxA(nullptr, "Succesfully installed! :)", AppName, MB_OK);
+
+        #endif
     #endif
 
     return PROG_SUCCESS;

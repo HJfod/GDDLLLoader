@@ -1,4 +1,4 @@
-
+This is an extension to adaf's GDDLLLoader, featuring a page in GD that lists all your mods.
 
 # GDDLLLoader
 

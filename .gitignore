@@ -10,6 +10,15 @@
 *.userosscache
 *.sln.docstates
 
+__GDS
+.gmdpath
+ModLdr.dll
+ModLdr.exp
+ModLdr.lib
+OneTimeRunner.exe
+uninstall.exe
+install.exe
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

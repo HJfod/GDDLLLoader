@@ -16,6 +16,8 @@ FOR %%A IN (%*) DO (
     IF "%%A"=="-c" set RUN_TRUE=0
     IF "%%A"=="-p" set PUB_LISH=1
     IF "%%A"=="-d" set SKI_PRUN=1
+    IF "%%A"=="-i" goto comins
+    IF "%%A"=="-u" goto comuins
 )
 
 if %DLL_COMP%==1 (
@@ -27,7 +29,7 @@ if %DLL_COMP%==1 (
 if %SKI_PRUN%==1 (goto done)
 
 echo Compiling Runner...
-clang++ runner.cpp -o %EXE_NAME% -std=c++17 -m32 -luser32 -lWtsApi32 -D NOMSGBOX
+clang++ runner.cpp -o %EXE_NAME% -std=c++17 -m32 -luser32 -lAdvapi32 -lWtsApi32
 if %errorlevel%==0 (
     echo Compiled Runner!
     if %PUB_LISH%==1 (
@@ -50,6 +52,18 @@ md releases
 xcopy /y %EXE_NAME% releases\%EXE_NAME%*
 xcopy /y %DLL_NAME% releases\%DLL_NAME%*
 xcopy /y MinHook.x86.dll releases\MinHook.x86.dll*
+goto done
+
+:comins
+echo Compiling Installer...
+clang++ installer.cpp -o install.exe -std=c++17 -m32 -luser32 -lWtsApi32 -lAdvapi32
+echo Compiled Installer
+goto done
+
+:comuins
+echo Compiling Uninstaller...
+clang++ installer.cpp -o uninstall.exe -std=c++17 -m32 -luser32 -lWtsApi32 -lAdvapi32 -DUNINSTALL
+echo Compiled Installer
 goto done
 
 :done

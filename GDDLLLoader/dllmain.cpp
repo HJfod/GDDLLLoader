@@ -5,18 +5,13 @@
 
 HMODULE module;
 
+void  __declspec(dllexport) zstub(){}
+
 DWORD WINAPI main_hook(LPVOID lpParam) {
 	if (!MenuLayer::mem_init())
 		return 1;
 
-	if (!std::filesystem::is_directory("mods") || !std::filesystem::exists("mods")) 
-		std::filesystem::create_directory("mods");
-
-	for (std::filesystem::directory_entry file : std::filesystem::directory_iterator("mods\\")) {
-		std::string p = file.path().string();
-		if (methods::ewith(p, ".dll"))
-			MenuLayer::load_mod(p);
-	}
+	MenuLayer::load_mods();
 
 	while (true) {};
 

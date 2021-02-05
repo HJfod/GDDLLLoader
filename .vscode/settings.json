@@ -67,6 +67,15 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "array": "cpp",
+        "clocale": "cpp",
+        "condition_variable": "cpp",
+        "csignal": "cpp",
+        "forward_list": "cpp",
+        "mutex": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "valarray": "cpp"
     }
 }
