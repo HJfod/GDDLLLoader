@@ -1,7 +1,0 @@
-[
-{
-  "directory": "F:/github/GDDLLLoaderB/build",
-  "command": "\"C:/Program Files/LLVM/bin/clang++.exe\"  @CMakeFiles/ModLdr.dir/includes_CXX.rsp -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -o CMakeFiles/ModLdr.dir/main.cpp.obj -c F:/github/GDDLLLoaderB/main.cpp",
-  "file": "F:/github/GDDLLLoaderB/main.cpp"
-}
-]

@@ -16,6 +16,8 @@ namespace ModLdr {
         offset_type ButtonSpriteCreate      = base + 0x137D0;
         offset_type ButtonCreate            = base + 0x18EE0;
 
-        offset_type FLAlertLayerCreate      = base + 0x227E0;
+        offset_type FLAlertLayerCreate      = base + 0x22680;
+        offset_type FLAlertLayerCreate2     = base + 0x227E0;
+        offset_type FLAlertLayerShow        = base + 0x23560;
     }
 }

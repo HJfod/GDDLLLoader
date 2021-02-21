@@ -113,13 +113,10 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* unknown) {
         txt->setPosition(x - 110, ssp + liftsfx);
     }
 
-    //ButtonSprite_spr* testSpr = ButtonSprite_spr::create("Test", 0, 0, 0, "goldFont.fnt", "GJ_button_01.png", 0);
-
     ButtonSprite* mods = ButtonSprite::create(
-        //ButtonSprite_mine::create("Mods", "GJ_button_01.png", "goldFont.fnt", 1.0f, { lw, bh }),
-        ButtonSpriteSpr::create("Mods", (float)lw, true, "goldFont.fnt", "GJ_button_01.png", bh, 1.0),
+        ButtonSpriteSpr::create("Mods", (int)lw, false, "goldFont.fnt", "GJ_button_01.png", bh, 1.0),
         bmenu,
-        nullptr
+        (cocos2d::SEL_MenuHandler)&SettingsLayer::showModList
     );
 
     mods->setPosition(lpos, dis);
@@ -127,5 +124,13 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* unknown) {
     bmenu->addChild(mods);
 
     return;
+}
+
+void ModLdr::SettingsLayer::showModList(cocos2d::CCObject* pSender) {
+    auto f = FLAlertLayer::create(
+        nullptr, "Test", "epic", "gg", 250.0, 0, 0, "official <cr>pog</c> moment"
+    );
+
+    f->show();
 }
 

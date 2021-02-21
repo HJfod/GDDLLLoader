@@ -8,6 +8,8 @@ DWORD WINAPI my_thread(void* hModule) {
     ModLdr::awaitUnload();
     
     ModLdr::unload(reinterpret_cast<HMODULE>(hModule));
+    
+    return 0;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID) {
