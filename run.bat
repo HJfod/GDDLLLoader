@@ -1,9 +1,9 @@
 @echo off
 
-set INP_NAME=GDDLLLoader/dllmain.cpp cappuccino-sdk\incl\cocos2dx\custom\Sprites\CCMenuItemSpriteExtra\CCMenuItemSpriteExtra.cpp
+set INP_NAME=GDDLLLoader/dllmain.cpp cappuccino-sdk\incl\cocos2dx\custom\Sprites\CCMenuItemSpriteExtra\CCMenuItemSpriteExtra.cpp GDDLLLoader\gd\ButtonSprite.cpp GDDLLLoader\gd\DropDownLayer.cpp GDDLLLoader\gd\FLAlertLayer.cpp GDDLLLoader\gd\Input.cpp
 set DLL_NAME=ModLdr.dll
 set EXE_NAME=OneTimeRunner.exe
-set COM_PARM=-luser32 -lDbghelp -lmsvcrt -lmsvcmrt -llibMinHook-x86-v141-mt -lnfd -lShlwapi -lWtsApi32 -m32 -lshell32 -lole32 -O3 -lcomdlg32 -lWs2_32 -lcappuccino-sdk/lib/cappuccino -Icappuccino-sdk/incl/cocos2dx -Icappuccino-sdk/incl/cocos2dx/include -Icappuccino-sdk/incl/cocos2dx/kazmath/include -Icappuccino-sdk/incl/cocos2dx/platform/android -Icappuccino-sdk/incl/CocosDenshion/android -Icappuccino-sdk/incl/CocosDenshion/include -Icappuccino-sdk/incl/cocos2dx/platform/win32 -Icappuccino-sdk/incl/cocos2dx/platform/third_party/win32/OGLES
+set COM_PARM=-luser32 -lDbghelp -lmsvcrt -lmsvcmrt -llibMinHook-x86-v141-mt -lnfd -lShlwapi -lWtsApi32 -m32 -lshell32 -lole32 -O3 -lcomdlg32 -lWs2_32 -lcappuccino-sdk/lib/cappuccino -lcappuccino-sdk/lib/libExtensions -Icappuccino-sdk/incl/cocos2dx -Icappuccino-sdk/incl/cocos2dx/include -Icappuccino-sdk/incl/cocos2dx/kazmath/include -Icappuccino-sdk/incl/cocos2dx/platform/android -Icappuccino-sdk/incl/CocosDenshion/android -Icappuccino-sdk/incl/CocosDenshion/include -Icappuccino-sdk/incl/cocos2dx/platform/win32 -Icappuccino-sdk/incl/cocos2dx/platform/third_party/win32/OGLES -Icappuccino-sdk/incl/extensions
 set RUN_ARGS=""
 set DLL_COMP=1
 set RUN_TRUE=1

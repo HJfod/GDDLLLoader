@@ -207,13 +207,9 @@ int main(int argc, char* argv[]) {
     else {
         #ifdef UNINSTALL
 
-            std::cout << " Failed" << std::endl;
-
             throwErr("Please close GD to uninstall.", err::GD_RUNNING);
 
         #else
-
-            std::cout << " Failed" << std::endl;
 
             throwErr("Please close GD to install.", err::GD_RUNNING);
 
@@ -272,10 +268,11 @@ int main(int argc, char* argv[]) {
         std::cout << " Not found" << std::endl;
         std::cout << "Backing up files...";
 
-        if (methods::fcopy(GDDataFolder + "\\libcurl.dll", GDDataFolder + "\\libcurl.dll.bak") != METH_SUCCESS) {
-            std::cout << " Failed" << std::endl;
-            throwErr("Unable to back up libcurl.dll!", err::CANT_BACKUP);
-        }
+        if (!std::filesystem::exists("libcurl.dll.back"))
+            if (methods::fcopy(GDDataFolder + "\\libcurl.dll", GDDataFolder + "\\libcurl.dll.back") != METH_SUCCESS)
+                throwErr("Unable to back up libcurl.dll!", err::CANT_BACKUP);
+
+        methods::fcopy("libcurl.dll", GDDataFolder + "\\libcurl.dll");
 
         std::cout << " Success" << std::endl;
     }
@@ -288,27 +285,27 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Removing files...";
 
-    if (!std::filesystem::exists(GDDataFolder + "\\libcurl.dll.bak")) {
-        std::cout << " Failed" << std::endl;
-        throwErr("Backup of libcurl.dll not found! (Unable to uninstall)", err::CANT_UNINSTALL);
+    if (std::filesystem::exists(GDDataFolder + "\\absolutedlls")) {
+        std::string data = methods::fread(GDDataFolder + "\\absolutedlls");
+
+        data = methods::replace(data, "ModLdr.dll", "");
+
+        methods::fsave(GDDataFolder + "\\absolutedlls", data);
+    } else {
+        if (!std::filesystem::exists(GDDataFolder + "\\libcurl.dll.back"))
+            throwErr("Backup of libcurl.dll not found! (Unable to uninstall)", err::CANT_UNINSTALL);
+
+        methods::fcopy(GDDataFolder + "\\libcurl.dll.back", GDDataFolder + "\\libcurl.dll");
     }
 
-    methods::fcopy(GDDataFolder + "\\libcurl.dll.bak", GDDataFolder + "\\libcurl.dll");
-    
-    if (remove((GDDataFolder + "\\ModLdr.dll").c_str()) != 0) {
-        std::cout << " Failed" << std::endl;
+    if (remove((GDDataFolder + "\\ModLdr.dll").c_str()) != 0)
         throwErr("Unable to delete ModLdr.dll!", err::CANT_UNINSTALL);
-    }
 
-    if (remove((GDDataFolder + "\\Resources\\DL_mods.png").c_str()) != 0) {
-        std::cout << " Failed" << std::endl;
+    if (remove((GDDataFolder + "\\Resources\\DL_mods.png").c_str()) != 0)
         throwErr("Unable to delete DL_mods.png!", err::CANT_UNINSTALL);
-    }
 
-    if (remove((GDDataFolder + "\\Resources\\DL_folder.png").c_str()) != 0) {
-        std::cout << " Failed" << std::endl;
+    if (remove((GDDataFolder + "\\Resources\\DL_folder.png").c_str()) != 0)
         throwErr("Unable to delete DL_folder.png!", err::CANT_UNINSTALL);
-    }
 
     std::cout << " Success" << std::endl;
 
@@ -331,8 +328,6 @@ int main(int argc, char* argv[]) {
             if (methods::fcopy(act == req_files[i] ? act : act.substr(act.find_first_of("\\") + 1), nMHpath) != METH_SUCCESS)
                 throwErr("There was an error copying files (METH_COPY_FROM_DOESNT_EXIST, probably)", err::FILE_NOT_FOUND);
     }
-
-    methods::fcopy("libcurl.dll", GDDataFolder + "\\libcurl.dll");
 
     std::cout << " Success" << std::endl;
 

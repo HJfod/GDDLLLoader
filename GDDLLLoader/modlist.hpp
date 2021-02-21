@@ -1,4 +1,5 @@
 #include <cocos2d.h>
+#include "../cappuccino-sdk/incl/extensions/GUI/CCControlExtension/CCScale9Sprite.h"
 #include <process.h>
 #include "MinHook.h"
 #include "../ext/nfd.h"
@@ -8,6 +9,9 @@
 #include <Shlwapi.h>
 #include <algorithm>
 #include <filesystem>
+#include "gd/gd.hpp"
+
+static constexpr const char* credits = "ModLdr by adaf & HJfod";
 
 struct mod {
     HMODULE module;
@@ -19,14 +23,14 @@ struct page {
     int max;
 };
 
-namespace MenuLayer {
+namespace ModLdr {
     std::vector<mod*> modList;
 
     void load_mod(std::string path) {
 		HMODULE handle = LoadLibraryA(path.c_str());
 
 		if (handle != nullptr)
-			MenuLayer::modList.push_back(new mod {
+			ModLdr::modList.push_back(new mod {
 				handle,
 				path.substr(path.find_last_of("\\") + 1)
 			});
@@ -51,7 +55,7 @@ namespace MenuLayer {
             std::string p = file.path().string();
             if (methods::ewith(p, ".dll"))
                 if (!is_loaded(p.substr(p.find_last_of("\\") + 1))) {
-                    MenuLayer::load_mod(p);
+                    ModLdr::load_mod(p);
                     c++;
                 }
         }
@@ -98,7 +102,6 @@ class Callback {
         static constexpr int m_tag = 349;
         static constexpr int opt_h = 26;
         static constexpr int page_items = 7;
-        static std::string modtorem;
 
         void close_mod_menu(cocos2d::CCObject* pSender) {
             cocos2d::CCScene* scene = cocos2d::CCDirector::sharedDirector()->getRunningScene();
@@ -119,7 +122,7 @@ class Callback {
                 fname = fname.substr(fname.find_last_of("\\"));
                 fname = "mods\\" + fname;
                 methods::fcopy(path, fname);
-                MenuLayer::load_mod(fname);
+                ModLdr::load_mod(fname);
                 mods(nullptr);
                 free(path);
             }
@@ -129,7 +132,7 @@ class Callback {
             std::string name = *(std::string*)((cocos2d::CCNode*)pSender)->getUserData();
 
             int ix = 0;
-            for (mod* mod : MenuLayer::modList) {
+            for (mod* mod : ModLdr::modList) {
                 if (mod->name == name) {
                     HMODULE modu = GetModuleHandleA(mod->name.c_str());
                     
@@ -154,7 +157,7 @@ class Callback {
                     }
                     
                     MessageBoxA(nullptr, "feetus", "yeetus", MB_OK);
-                    MenuLayer::modList.erase(MenuLayer::modList.begin() + ix);
+                    ModLdr::modList.erase(ModLdr::modList.begin() + ix);
 
                     cocos2d::CCScene* scene = cocos2d::CCDirector::sharedDirector()->getRunningScene();
                     
@@ -174,7 +177,7 @@ class Callback {
         }
 
         void refresh_mods(cocos2d::CCObject* pSender) {
-            MenuLayer::load_mods();
+            ModLdr::load_mods();
 
             MessageBoxA(nullptr, "Warning: Refreshing does not unload deleted mods. You need to restart GD to remove mods.", "Warning", MB_ICONWARNING);
 
@@ -187,7 +190,7 @@ class Callback {
             _menu->removeAllChildrenWithCleanup(true);
 
             for (int ix = 0; ix < page_items; ix++) {
-                if (ix + _page * 7 >= MenuLayer::modList.size()) break;
+                if (ix + _page * 7 >= ModLdr::modList.size()) break;
 
                 cocos2d::CCMenuItem* mi = cocos2d::CCMenuItem::create();
                 cocos2d::ccColor4B col;
@@ -219,7 +222,7 @@ class Callback {
                     (cocos2d::SEL_MenuHandler)&Callback::remove_mod
                 );
 
-                unlb->setUserData(new std::string(MenuLayer::modList.at(ix + _page * 7)->name));
+                unlb->setUserData(new std::string(ModLdr::modList.at(ix + _page * 7)->name));
 
                 unlb->setScale(.8);
                 unlb->setPosition(0, 0);
@@ -227,7 +230,7 @@ class Callback {
                 semen->addChild(unlb);
 
                 cocos2d::CCLabelBMFont* txt = cocos2d::CCLabelBMFont::create(
-                    MenuLayer::modList.at(ix + _page * 7)->name.c_str(),
+                    ModLdr::modList.at(ix + _page * 7)->name.c_str(),
                     "bigFont.fnt"
                 );
 
@@ -316,6 +319,7 @@ class Callback {
             cocos2d::CCSprite* sprRefresh = cocos2d::CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
 
             cocos2d::CCLabelBMFont* title = cocos2d::CCLabelBMFont::create("Mods", "bigFont.fnt");
+            cocos2d::CCLabelBMFont* version = cocos2d::CCLabelBMFont::create("v1.1", "goldFont.fnt");
 
             title->setPosition( psiz.width / 2, ( z.height / 2 - psiz.height / 2 ) - sprTop->getContentSize().height / 2 + 4 );
             title->setScale(.8);
@@ -332,8 +336,8 @@ class Callback {
             sprSide0->setPosition({ 6, psiz.height / 2 });
             sprSide1->setPosition({ psiz.width - 6, psiz.height / 2 });
 
-            if (MenuLayer::modList.size() > 0) {
-                int max_page = ((int)std::ceil( MenuLayer::modList.size() / (double)page_items )) - 1;
+            if (ModLdr::modList.size() > 0) {
+                int max_page = ((int)std::ceil( ModLdr::modList.size() / (double)page_items )) - 1;
 
                 cocos2d::CCLabelBMFont* pagen = cocos2d::CCLabelBMFont::create("Page ~/~", "goldFont.fnt");
                 pagen->setTag(m_tag + 1);
@@ -439,13 +443,278 @@ class Callback {
 
             layer->addChild(btns);
 
+            version->setPosition( psiz.width / 2, - 32 );
+            version->setScale(.65),
+
+            layer->addChild(version);
+
             backLayer->addChild(layer);
 
             backLayer->setTag(l_tag);
 
             dir->getRunningScene()->addChild(backLayer);
         }
+
+        void test(cocos2d::CCObject* pSender) {
+            //FLAlertLayer::create(nullptr, "yoo", "yoooo", "yoooooo", "yoooooooo");
+
+            cocos2d::CCLayerColor* out = DropDownLayer::create("Swaggy");
+
+            //DropDownLayer::show(out, "Swaggy");
+        }
+
+        void test2(cocos2d::CCObject* pSender) {
+            uintptr_t l = (uintptr_t)OptionsLayer::show();
+
+            std::cout << "yeet\n";
+
+            std::cout << "hey it didn't crash" << std::endl;
+        }
 };
+
+namespace fuck_it_i_give_up {
+    void (__fastcall * cum)(cocos2d::CCObject*);
+    void __fastcall dick(cocos2d::CCObject* pSender) {
+        std::cout << "fml\n";
+
+        cum(pSender);
+    }
+    
+    void mem_init() {
+        MH_CreateHook((PVOID)((uintptr_t)GetModuleHandleA(0) + 0x191C30), (LPVOID)dick, (LPVOID*)&cum);
+    }
+}
+
+class ButtonSprite_mine : public cocos2d::CCSprite {
+    public:
+        static cocos2d::CCSprite* create(
+            const char* _text,
+            const char* _bsprite,
+            const char* _font,
+            float _tscale,
+            cocos2d::CCSize _size
+        ) {
+            cocos2d::extension::CCScale9Sprite* backSpr = cocos2d::extension::CCScale9Sprite::create(
+                _bsprite, { 0, 0, 40, 40 }
+            );
+
+            backSpr->setContentSize(_size);
+
+            cocos2d::CCSprite* spr = cocos2d::CCSprite::create();
+            spr->setContentSize(_size);
+
+            backSpr->setPosition(_size.width / 2, _size.height / 2);
+            spr->addChild(backSpr);
+
+            cocos2d::CCLabelBMFont* text = cocos2d::CCLabelBMFont::create(_text, _font);
+            text->setPosition(_size.width / 2, _size.height / 2 + 3);
+            text->setScale(_tscale);
+            spr->addChild(text);
+
+            return spr;
+        };
+};
+
+namespace HelpLayer {
+    inline void (__fastcall* init)(cocos2d::CCNode*);
+    void __fastcall initHook(cocos2d::CCNode* _self) {
+        init(_self);
+
+        cocos2d::CCSize win = cocos2d::CCDirector::sharedDirector()->getWinSize();
+
+        cocos2d::CCNode* child = (cocos2d::CCNode*)_self->getChildren()->objectAtIndex(0);
+
+        cocos2d::CCLabelBMFont* label = cocos2d::CCLabelBMFont::create(credits, "goldFont.fnt");
+        label->setPosition(win.width / 2, 10);
+        label->setScale(.5);
+
+        child->addChild(label);
+
+        return;
+    }
+
+    void mem_init() {
+        uintptr_t base = (uintptr_t)GetModuleHandleA(0);
+
+        MH_CreateHook((PVOID)(base + 0x25C7B0), (LPVOID)initHook, (LPVOID*)&init);
+    }
+}
+
+namespace SettingsLayer {
+    int test;
+    inline void (__fastcall* init)(cocos2d::CCNode*);
+    void __fastcall initHook(cocos2d::CCNode* unknown) {
+        init(unknown);
+
+        /*
+        0 : child layer
+            0 : background
+            1 : back button
+            2 : left chain
+            3 : right chain
+            4 : BUTTONS
+                0-6 : these all follow the order you'd expect
+            5 : music slider text
+            6 : music slider
+            7 : sfx slider text
+            8 : sfx slider
+            9 : vault icon
+        */
+        
+        cocos2d::CCArray* menus = ((cocos2d::CCNode*)unknown->getChildren()->objectAtIndex(0))->getChildren();
+
+        cocos2d::CCMenu* bmenu = (cocos2d::CCMenu*)menus->objectAtIndex(4);
+
+        cocos2d::CCArray* buttons = bmenu->getChildren();
+
+        // let us compress these mfs
+
+        float condense = 6;
+        float liftsfx = 4;
+        float dis;
+
+        float lpos, rpos, lw, rw, bh, smp, ssp;
+
+        { // top row
+            float y = ((cocos2d::CCNode*)buttons->objectAtIndex(0))->getPositionY();
+
+            y += condense;
+
+            ((cocos2d::CCNode*)buttons->objectAtIndex(0))->setPositionY(y);
+            ((cocos2d::CCNode*)buttons->objectAtIndex(1))->setPositionY(y);
+
+            dis = y;
+        }
+
+        { // middle row
+            float y = ((cocos2d::CCNode*)buttons->objectAtIndex(2))->getPositionY();
+
+            y += condense * 2;
+
+            ((cocos2d::CCNode*)buttons->objectAtIndex(2))->setPositionY(y);
+            ((cocos2d::CCNode*)buttons->objectAtIndex(3))->setPositionY(y);
+
+            dis -= y;
+        }
+
+        { // bottom row
+            cocos2d::CCNode* rateB = (cocos2d::CCNode*)buttons->objectAtIndex(4);
+            cocos2d::CCNode* songsB = (cocos2d::CCNode*)buttons->objectAtIndex(5);
+            cocos2d::CCNode* helpB = (cocos2d::CCNode*)buttons->objectAtIndex(6);
+
+            float y = rateB->getPositionY();
+
+            float gap = helpB->getPositionX() - songsB->getPositionX();
+
+            lpos = songsB->getPositionX();  // rateB->getPositionX();
+            lw = songsB->getContentSize().width;  // rateB->getContentSize().width;
+            bh = rateB->getContentSize().height;
+            rpos = helpB->getPositionX() - gap / 2;
+
+            gap -= songsB->getContentSize().width / 2 + helpB->getContentSize().width / 2;
+
+            rw = helpB->getContentSize().width + songsB->getContentSize().width + gap;
+
+            y += condense * 3;
+
+            rateB->setPositionY(y);
+            songsB->setPositionY(y);
+            helpB->setPositionY(y);
+
+            dis = y - dis;
+        }
+
+        { // music slider
+            cocos2d::CCNode* sldr = (cocos2d::CCNode*)menus->objectAtIndex(6);
+            float x = sldr->getPositionX();
+
+            smp = sldr->getPositionY();
+
+            sldr->setPositionX(x + 40);
+        }
+
+        { // music slider text
+            cocos2d::CCNode* txt = (cocos2d::CCNode*)menus->objectAtIndex(5);
+            float x = txt->getPositionX();
+
+            txt->setPosition(x - 110, smp);
+        }
+
+        { // sfx slider
+            cocos2d::CCNode* sldr = (cocos2d::CCNode*)menus->objectAtIndex(8);
+            float x = sldr->getPositionX();
+
+            ssp = sldr->getPositionY();
+
+            sldr->setPosition(x + 40, ssp + liftsfx);
+        }
+
+        { // sfx slider text
+            cocos2d::CCNode* txt = (cocos2d::CCNode*)menus->objectAtIndex(7);
+            float x = txt->getPositionX();
+
+            txt->setPosition(x - 110, ssp + liftsfx);
+        }
+
+        //ButtonSprite_spr* testSpr = ButtonSprite_spr::create("Test", 0, 0, 0, "goldFont.fnt", "GJ_button_01.png", 0);
+
+        ButtonSprite* mods = ButtonSprite::create(
+            //ButtonSprite_mine::create("Mods", "GJ_button_01.png", "goldFont.fnt", 1.0f, { lw, bh }),
+            ButtonSpriteSpr::create("Mods", (float)lw, true, "goldFont.fnt", "GJ_button_01.png", bh, 1.0),
+            bmenu,
+            (cocos2d::SEL_MenuHandler)&Callback::test
+        );
+
+        mods->setPosition(lpos, dis);
+
+        bmenu->addChild(mods);
+
+        // Note to self:
+        // don't try to merge projects with uncommitted required headers on github
+
+        /*
+
+        ButtonSprite* test = ButtonSprite::create(
+            ButtonSprite_mine::create("Textures", "GJ_button_01.png", "goldFont.fnt", 1.0f, { rw, bh }),
+            bmenu,
+            (cocos2d::SEL_MenuHandler)&Callback::mods
+        );
+
+        test->setPosition(rpos, dis);
+
+        bmenu->addChild(test);
+
+        //*/
+
+        //MessageBoxA(nullptr, "wtf", "wtf", MB_OK);
+
+        return;
+    }
+
+    void mem_init() {
+        uintptr_t base = (uintptr_t)GetModuleHandleA(0);
+
+        MH_CreateHook((PVOID)(base + 0x1DD420), (LPVOID)SettingsLayer::initHook, (LPVOID*)&SettingsLayer::init);
+    }
+}
+
+void main_loop(HMODULE module) {
+    std::string _inp;
+    getline(std::cin, _inp);
+    if (_inp == "e") {
+        fclose(stdin);
+        fclose(stdout);
+        fclose(stderr);
+        FreeConsole();
+
+        MH_DisableHook(MH_ALL_HOOKS);
+        FreeLibraryAndExitThread(module, 0);
+        exit(0);
+    }
+    SettingsLayer::test = std::stoi(_inp);
+    
+    main_loop(module);
+}
 
 namespace MenuLayer {
     inline bool (__thiscall* init)(cocos2d::CCLayer* self);
@@ -462,8 +731,7 @@ namespace MenuLayer {
         menu->removeChild(chestBtn, false);
 
         cocos2d::CCSprite* spr = cocos2d::CCSprite::create("DL_mods.png");
-        CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(
-            spr,
+        ButtonSprite* btn = ButtonSprite::create(
             spr,
             menu,
             (cocos2d::SEL_MenuHandler)&Callback::mods
@@ -474,18 +742,42 @@ namespace MenuLayer {
 
         menu->addChild(chestBtn);
 
+        cocos2d::CCSprite* sp = Input::bg_create({ 250, 80 });
+        sp->setPosition({ 250, 250 });
+        _self->addChild(sp);
+
+        void* si = Input::create("cum", sp, "bigFont.fnt");
+
         return in;
     }
 
-    bool mem_init() {
+    void mem_init() {
+        uintptr_t base = (uintptr_t)GetModuleHandleA(0);
+
+        MH_CreateHook((PVOID)(base + 0x1907b0), (LPVOID)initHook, (LPVOID*)&init);
+    }
+}
+
+namespace ModLdr {
+    bool init() {
         // Initialize hooker
         MH_STATUS ini = MH_Initialize();
         if (ini != MH_OK)
             return false;
 
-        uintptr_t base = (uintptr_t)GetModuleHandleA(0);
+        // create console
+        if (AllocConsole() == 0)
+            return false;
+        
+        // redirect console output
+        freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+        freopen_s(reinterpret_cast<FILE**>(stdin), "CONIN$", "r", stdin);
+        freopen_s(reinterpret_cast<FILE**>(stdout), "CONERR$", "w", stderr);
 
-        MH_CreateHook((PVOID)(base + 0x1907b0), (LPVOID)MenuLayer::initHook, (LPVOID*)&MenuLayer::init);
+        MenuLayer::mem_init();
+        SettingsLayer::mem_init();
+        HelpLayer::mem_init();
+        fuck_it_i_give_up::mem_init();
 
         MH_EnableHook(MH_ALL_HOOKS);
 

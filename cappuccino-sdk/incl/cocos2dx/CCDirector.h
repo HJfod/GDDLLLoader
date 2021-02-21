@@ -401,7 +401,8 @@ public:
 
     CC_PROPERTY_NOVIRTUAL(float, m_fActualDeltaTime, ActualDeltaTime); //0x68;
 
-    CC_SYNTHESIZE_READONLY(bool, m_bIsTransitioning, IsTransitioning) //0x6C;
+    //Hello there
+    ROB_CC_SYNTHESIZE(bool, m_bIsTransitioning, IsTransitioning) //0x6C;
     
 
 public:
@@ -527,7 +528,7 @@ public:
     bool getSmoothFixCheck(void) const;
     int getSmoothFixCounter(void) const;
     int levelForSceneInStack(CCScene*);
-    void popSceneWithTransition(float, PopTransition);
+    bool popSceneWithTransition(float, PopTransition);
     int sceneCount(void);
     //void setActualDeltaTime(float); //Already taken care of
     //void setDeltaTime(float);       //Already taken care of

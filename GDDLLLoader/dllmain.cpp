@@ -8,12 +8,12 @@ HMODULE module;
 void  __declspec(dllexport) zstub(){}
 
 DWORD WINAPI main_hook(LPVOID lpParam) {
-	if (!MenuLayer::mem_init())
+	if (!ModLdr::init())
 		return 1;
 
-	MenuLayer::load_mods();
+	ModLdr::load_mods();
 
-	while (true) {};
+	main_loop(module);
 
 	MH_DisableHook(MH_ALL_HOOKS);
 	FreeLibraryAndExitThread(module, 0);
