@@ -1,0 +1,6 @@
+[submodule "submodules/CappuccinoSDK"]
+	path = submodules/CappuccinoSDK
+	url = https://github.com/AndreNIH/CappuccinoSDK
+[submodule "submodules/MinHook"]
+	path = submodules/MinHook
+	url = https://github.com/TsudaKageyu/minhook

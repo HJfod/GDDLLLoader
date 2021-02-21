@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${vcpkgRoot}/x86-windows/include",
+                "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/include/**",
+                "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/**",
+                "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/include/**",
+                "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/kazmath/include/**",
+                "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/win32/**",
+                "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/**",
+                "${workspaceFolder}/submodules/MinHook/include/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.18362.0",
+            "compilerPath": "C:/Program Files/LLVM/bin/clang.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,10 @@
+^F:\GITHUB\GDDLLLOADERB\BUILD\CMAKEFILES\9CF572D719DCD2E230EC5217D0B59229\GENERATE.STAMP.RULE
+setlocal
+D:\CMake\bin\cmake.exe -SF:/github/GDDLLLoaderB -BF:/github/GDDLLLoaderB/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file F:/github/GDDLLLoaderB/build/ModLdr.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
