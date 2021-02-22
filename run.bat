@@ -10,6 +10,11 @@ if not exist submodules\ (
     git submodule update
 )
 
+if "%1"=="run" (
+    cd build
+    goto run
+)
+
 if "%1"=="re" (
     if exist build\ (
         rmdir /s /q build
@@ -26,7 +31,8 @@ cd build
 
 echo %ESC%[93m • Generating project...%ESC%[0m
 
-del Release\ModLdr.exe
+del Release\ModLdr.dll
+del Release\OneTimeRunner.exe
 
 cmake .. -A Win32 -Thost=x86
 
@@ -44,13 +50,10 @@ if not exist Release\ModLdr.dll (
 xcopy /y ..\resources\DL_mods.png Release\DL_mods.png*
 xcopy /y ..\resources\DL_folder.png Release\DL_folder.png*
 
-echo.
-echo %ESC%[92m • Compiling runner...%ESC%[0m
-
-clang++ ../runner.cpp -o Release/OneTimeRunner.exe -std=c++20 -m32 -luser32 -lAdvapi32 -lWtsApi32 -DNOMSGBOX
+:run
 
 if exist Release\OneTimeRunner.exe (
-    echo Compiled
+    echo ✔️  Runner compiled
 ) else (
     rem fuck you
     echo %ESC%[91m • Oh nyo?!?1 i cant compiwe the x3 wunnyew.... so sowwy *huggles tightly* ^>w^<%ESC%[0m

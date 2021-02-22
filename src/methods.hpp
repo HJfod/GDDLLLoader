@@ -69,7 +69,7 @@ namespace methods {
         if (in) {
             std::string contents;
             in.seekg(0, std::ios::end);
-            contents.resize(in.tellg());
+            contents.resize((size_t)in.tellg());
             in.seekg(0, std::ios::beg);
             in.read(&contents[0], contents.size());
             in.close();
@@ -123,7 +123,7 @@ namespace methods {
 
     int count (std::string _s, char _c) {
         int count = 0;
-        for (int i = 0; i < _s.size(); i++)
+        for (unsigned int i = 0; i < _s.size(); i++)
             if (_s[i] == _c) count++;
         return count;
     }
@@ -187,88 +187,11 @@ namespace methods {
 
         int end() {
             auto end_ = std::chrono::high_resolution_clock().now();
-            return std::chrono::duration_cast<std::chrono::milliseconds>(end_ - perf_).count();
+            return (int)std::chrono::duration_cast<std::chrono::milliseconds>(end_ - perf_).count();
         }
 
         void log(std::string _text) {
             std::cout << _text << "\t " << end() << "ms" << std::endl;
         }
-    }
-}
-
-namespace console {
-    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD CursorPosition;
-
-    void gotoXY(int _x, int _y) {
-        CursorPosition.X = _x;
-        CursorPosition.Y = _y;
-        SetConsoleCursorPosition(console, CursorPosition);
-    };
-
-    int selectmenu (std::vector<std::string> options, std::string *ret) {
-        std::cout << "[Use arrow keys to navigate, space / enter to select]" << std::endl;
-
-        for (std::string option : options)
-            std::cout << " * " << option << std::endl;
-        
-        CONSOLE_SCREEN_BUFFER_INFO cbsi;
-        GetConsoleScreenBufferInfo(console, &cbsi);
-            
-        bool selected = false;
-        int last = 0;
-        int selin = 0;
-        while (!selected) {
-            gotoXY(cbsi.dwCursorPosition.X, cbsi.dwCursorPosition.Y - options.size() + last);
-            std::cout << " * ";
-            gotoXY(cbsi.dwCursorPosition.X, cbsi.dwCursorPosition.Y - options.size() + selin);
-            std::cout << " > ";
-            last = selin;
-            gotoXY(cbsi.dwCursorPosition.X, cbsi.dwCursorPosition.Y);
-
-            switch (_getch()) {
-                case '\r': case ' ':
-                    selected = true;
-                    break;
-                case 27:
-                    selected = true;
-                    selin = -1;
-                    break;
-                case 0: case 224:
-                    switch (_getch()) {
-                        case 72: case 75:
-                            selin--;
-                            if (selin < 0) selin = options.size() - 1;
-                            break;
-                        case 80: case 77:
-                            selin++;
-                            if (selin > options.size() - 1) selin = 0;
-                            break;
-                    }
-                    break;
-            }
-        }
-        if (selin >= 0)
-            *ret = options[selin];
-        return selin;
-    }
-
-    void loadbar (std::string _txt, bool *_end) {
-        std::chrono::milliseconds s = std::chrono::milliseconds(200);
-        while (!*_end) {
-            std::cout << "\r / "  << _txt;
-            std::this_thread::sleep_for(s);
-            std::cout << "\r - "  << _txt;
-            std::this_thread::sleep_for(s);
-            std::cout << "\r \\ " << _txt;
-            std::this_thread::sleep_for(s);
-            std::cout << "\r | "  << _txt;
-            std::this_thread::sleep_for(s);
-        }
-        std::wcout << "\r* " << methods::conv(_txt) << std::endl;
-    }
-
-    std::thread showload (std::string txt, bool *end) {
-        return std::thread(loadbar, txt, end);
     }
 }

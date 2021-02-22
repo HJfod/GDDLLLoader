@@ -19,5 +19,9 @@ namespace ModLdr {
         offset_type FLAlertLayerCreate      = base + 0x22680;
         offset_type FLAlertLayerCreate2     = base + 0x227E0;
         offset_type FLAlertLayerShow        = base + 0x23560;
+
+        offset_type DropDownLayerInit       = base + 0x113530;
+        offset_type DropDownLayerShow       = base + 0x1139C0;
+        offset_type DropDownLayerHide       = base + 0x113A90;
     }
 }

@@ -1,6 +1,9 @@
 #pragma once
 
+#pragma warning( push, 0 )
 #include <cocos2d.h>
+#pragma warning( pop )
+
 #include <MinHook.h>
 #include "../offsets.hpp"
 #include "../gd/ButtonSprite.hpp"
@@ -9,7 +12,7 @@
 namespace ModLdr {
     class SettingsLayer {
         public:
-            static inline int test;
+            static inline int test = 0;
             static inline void (__fastcall* init)(cocos2d::CCNode*);
             static void __fastcall initHook(cocos2d::CCNode*);
             

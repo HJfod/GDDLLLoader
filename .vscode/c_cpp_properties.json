@@ -4,7 +4,6 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${vcpkgRoot}/x86-windows/include",
                 "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/include/**",
                 "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/**",
                 "${workspaceFolder}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/include/**",

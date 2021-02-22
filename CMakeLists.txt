@@ -3,13 +3,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECT_NAME ModLdr)
+set(RUNNER_NAME  OneTimeRunner)
 
 project(${PROJECT_NAME} VERSION 1.0.0)
-
-find_file(WINDOWS_HEADER windows.h)
-if (NOT WINDOWS_HEADER)
-  message(FATAL_ERROR "Can't find windows.h!")
-endif()
 
 file(GLOB_RECURSE SOURCES main.cpp src/*.cpp)
 
@@ -35,4 +31,13 @@ target_link_libraries(
     ${PROJECT_NAME}
     ${CMAKE_SOURCE_DIR}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/lib/cappuccino.lib
 )
+
+
+# runner
+
+add_executable(${RUNNER_NAME} runner.cpp)
+
+target_link_libraries(${RUNNER_NAME} WtsApi32)
+
+add_definitions(${PROJECT_SOURCE_DIR}/runner.cpp "-DNOMSGBOX")
 

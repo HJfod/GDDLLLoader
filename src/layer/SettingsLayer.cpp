@@ -1,7 +1,12 @@
 #include "SettingsLayer.hpp"
+#include "../gd/GJDropDownLayer.hpp"
 
-void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* unknown) {
-    init(unknown);
+static cocos2d::CCNode* getc(cocos2d::CCNode* const& _o, int _ix) {
+    return static_cast<cocos2d::CCNode*>(_o->getChildren()->objectAtIndex(_ix));
+}
+
+void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* _layer) {
+    init(_layer);
 
     /*
     0 : child layer
@@ -18,7 +23,7 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* unknown) {
         9 : vault icon
     */
     
-    cocos2d::CCArray* menus = ((cocos2d::CCNode*)unknown->getChildren()->objectAtIndex(0))->getChildren();
+    cocos2d::CCArray* menus = ((cocos2d::CCNode*)_layer->getChildren()->objectAtIndex(0))->getChildren();
 
     cocos2d::CCMenu* bmenu = (cocos2d::CCMenu*)menus->objectAtIndex(4);
 
@@ -120,6 +125,7 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* unknown) {
     );
 
     mods->setPosition(lpos, dis);
+    mods->setUserData(_layer);
 
     bmenu->addChild(mods);
 
@@ -127,10 +133,57 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* unknown) {
 }
 
 void ModLdr::SettingsLayer::showModList(cocos2d::CCObject* pSender) {
-    auto f = FLAlertLayer::create(
-        nullptr, "Test", "epic", "gg", 250.0, 0, 0, "official <cr>pog</c> moment"
-    );
+    //auto f = FLAlertLayer::create(
+    //    nullptr, "Test", "epic", "gg", 250.0, 0, 0, "official <cr>pog</c> moment"
+    //);
 
-    f->show();
+    //f->show();
+
+    auto l = GJDropDownLayer::create("Mods");
+    auto p = static_cast<cocos2d::CCNode*>(pSender);
+
+    cocos2d::CCDirector::sharedDirector()->getRunningScene()->addChild(l);
+
+	auto winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
+
+    auto n = getc(l, 0);
+    auto n2 = getc(n, 0);
+
+    auto mtop = getc(n2, 1);
+    auto mbot = getc(n2, 0);
+    auto mbg  = getc(n,  0);
+    auto mchn = getc(n,  2);
+    auto mch2 = getc(n,  3);
+    auto mtxt = getc(n2, 4);
+
+    const int h = 100;
+
+    n2->setContentSize({ 300, h * 2 });
+    mtop->setPositionY(mtop->getPositionY() + h * 2);
+    mbg ->setPositionY(mbg ->getPositionY() - h );
+    mchn->setPositionY(mchn->getPositionY() + h * 2);
+    mch2->setPositionY(mch2->getPositionY() + h * 2);
+    mbot->setPositionY(mbot->getPositionY()        );
+    mtxt->setPositionY(mtxt->getPositionY() + h * 2);
+
+    auto slayer = static_cast<GJDropDownLayer*>(p->getUserData());
+    
+    slayer->hideLayer();
+
+    // hardcoded delay let's go
+    // i found that there's some callback function
+    // at slayer + 0x214 called when the hide animation
+    // finishes, but couldn't figure out how i could add
+    // shit to it
+
+    l->runAction(
+        cocos2d::CCSequence::create(
+            cocos2d::CCDelayTime::create(.5),
+            cocos2d::CCCallFunc::create(l, static_cast<cocos2d::SEL_CallFunc>(
+                &GJDropDownLayer::showLayer
+            )),
+            nullptr
+        )
+    );
 }
 
