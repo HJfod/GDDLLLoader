@@ -9,9 +9,9 @@
 #define PAD(size) char pad[size] = {};
 
 class CustomListView : public cocos2d::CCLayer {
-    static CustomListView* create(cocos2d::CCLayer* layer) {
-        return reinterpret_cast<CustomListView*(__fastcall*)(cocos2d::CCLayer*)>(
-            ModLdr::base + 0x10A80
-        )(layer);
-    }
+    public:
+        static CustomListView* create(cocos2d::CCArray* _arr, float _f, float _2, int _n, intptr_t _type) {
+            return nullptr;
+        }
 };
+

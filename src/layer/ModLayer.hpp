@@ -9,10 +9,12 @@
 namespace ModLdr {
     class ModLayer : public GJDropDownLayer {
         public:
-            void customSetup() override;
-            void setup();
+            virtual void customSetup();
 
             void showInfo(cocos2d::CCObject*);
+            void showCredits(cocos2d::CCObject*);
+            void addMod(cocos2d::CCObject*);
+            void showModFolder(cocos2d::CCObject*);
 
             static ModLayer* create();
     };

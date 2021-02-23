@@ -6,7 +6,13 @@
 
 #include <MinHook.h>
 #include "layer/SettingsLayer.hpp"
+#include "layer/HelpLayer.hpp"
 #include "console.hpp"
+#include <filesystem>
+#include <algorithm>
+#include <sstream>
+#include <locale>
+#include <codecvt>
 
 bool ModLdr::init() {
     MH_STATUS sinit = MH_Initialize();
@@ -16,11 +22,14 @@ bool ModLdr::init() {
     console::load();
 
     SettingsLayer::loadHook();
+    HelpLayer::loadHook();
 
     MH_STATUS s = MH_EnableHook(MH_ALL_HOOKS);
 
     if (s != MH_STATUS::MH_OK)
         return false;
+    
+    ModLdr::Manager::loadMods();
 
     return true;
 }
