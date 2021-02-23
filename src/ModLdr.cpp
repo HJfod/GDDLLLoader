@@ -40,9 +40,6 @@ void ModLdr::awaitUnload() {
     std::string inp;
     getline(std::cin, inp);
 
-    if (inp._Starts_with("."))
-        SettingsLayer::test = std::stoi(inp.substr(1));
-
     if (inp != "e")
         ModLdr::awaitUnload();
 }

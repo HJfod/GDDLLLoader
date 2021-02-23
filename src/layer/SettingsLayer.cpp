@@ -1,12 +1,12 @@
 #include "SettingsLayer.hpp"
-#include "../gd/GJDropDownLayer.hpp"
+#include "ModLayer.hpp"
 
 static cocos2d::CCNode* getc(cocos2d::CCNode* const& _o, int _ix) {
     return static_cast<cocos2d::CCNode*>(_o->getChildren()->objectAtIndex(_ix));
 }
 
 void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* _layer) {
-    init(_layer);
+    init_(_layer);
 
     /*
     0 : child layer
@@ -133,42 +133,14 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* _layer) {
 }
 
 void ModLdr::SettingsLayer::showModList(cocos2d::CCObject* pSender) {
-    //auto f = FLAlertLayer::create(
-    //    nullptr, "Test", "epic", "gg", 250.0, 0, 0, "official <cr>pog</c> moment"
-    //);
-
-    //f->show();
-
-    auto l = GJDropDownLayer::create("Mods");
+    auto l = ModLayer::create();
     auto p = static_cast<cocos2d::CCNode*>(pSender);
 
     cocos2d::CCDirector::sharedDirector()->getRunningScene()->addChild(l);
 
-	auto winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
-
-    auto n = getc(l, 0);
-    auto n2 = getc(n, 0);
-
-    auto mtop = getc(n2, 1);
-    auto mbot = getc(n2, 0);
-    auto mbg  = getc(n,  0);
-    auto mchn = getc(n,  2);
-    auto mch2 = getc(n,  3);
-    auto mtxt = getc(n2, 4);
-
-    const int h = 100;
-
-    n2->setContentSize({ 300, h * 2 });
-    mtop->setPositionY(mtop->getPositionY() + h * 2);
-    mbg ->setPositionY(mbg ->getPositionY() - h );
-    mchn->setPositionY(mchn->getPositionY() + h * 2);
-    mch2->setPositionY(mch2->getPositionY() + h * 2);
-    mbot->setPositionY(mbot->getPositionY()        );
-    mtxt->setPositionY(mtxt->getPositionY() + h * 2);
-
     auto slayer = static_cast<GJDropDownLayer*>(p->getUserData());
     
-    slayer->hideLayer();
+    slayer->hideLayer(false);
 
     // hardcoded delay let's go
     // i found that there's some callback function
@@ -180,10 +152,10 @@ void ModLdr::SettingsLayer::showModList(cocos2d::CCObject* pSender) {
         cocos2d::CCSequence::create(
             cocos2d::CCDelayTime::create(.5),
             cocos2d::CCCallFunc::create(l, static_cast<cocos2d::SEL_CallFunc>(
-                &GJDropDownLayer::showLayer
+                &GJDropDownLayer::showLayerB
             )),
             nullptr
         )
-    );
+    );  //*/
 }
 

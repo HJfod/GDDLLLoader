@@ -8,12 +8,12 @@
 #include "../offsets.hpp"
 #include "../gd/ButtonSprite.hpp"
 #include "../gd/FLAlertLayer.hpp"
+#include "../gd/GJDropDownLayer.hpp"
 
 namespace ModLdr {
     class SettingsLayer {
         public:
-            static inline int test = 0;
-            static inline void (__fastcall* init)(cocos2d::CCNode*);
+            static inline void (__fastcall* init_)(cocos2d::CCNode*);
             static void __fastcall initHook(cocos2d::CCNode*);
             
             // this whole thing is a class full of static
@@ -23,7 +23,7 @@ namespace ModLdr {
             void showModList(cocos2d::CCObject*);
 
             static inline void loadHook() {
-                MH_CreateHook((PVOID)(offsets::SettingsLayerInit), (LPVOID)SettingsLayer::initHook, (LPVOID*)&SettingsLayer::init);
+                MH_CreateHook((PVOID)(offsets::SettingsLayerInit), (LPVOID)SettingsLayer::initHook, (LPVOID*)&SettingsLayer::init_);
             }
     };
 }
