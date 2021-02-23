@@ -1,12 +1,8 @@
 #pragma once
 
-#pragma warning( push, 0 )
-#include <cocos2d.h>
-#pragma warning( pop )
+#include "../offsets.hpp"
 
 #include <MinHook.h>
-
-#include "../offsets.hpp"
 
 namespace HelpLayer {
     inline void (__fastcall* init)(cocos2d::CCNode*);

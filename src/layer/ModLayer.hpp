@@ -1,9 +1,5 @@
 #pragma once
 
-#pragma warning( push, 0 )
-#include <cocos2d.h>
-#pragma warning( pop )
-
 #include "../gd/GJDropDownLayer.hpp"
 
 namespace ModLdr {
@@ -15,6 +11,8 @@ namespace ModLdr {
             void showCredits(cocos2d::CCObject*);
             void addMod(cocos2d::CCObject*);
             void showModFolder(cocos2d::CCObject*);
+
+            inline static int test = 0;
 
             static ModLayer* create();
     };

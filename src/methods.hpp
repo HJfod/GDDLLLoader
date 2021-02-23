@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <Windows.h>
+#include <iostream>
+#include <string>
 #include <algorithm>
 #include <locale>
 #include <codecvt>
@@ -11,7 +12,7 @@
 #include <thread>
 #include <vector>
 #include <conio.h>
-#include "WtsApi32.h"
+#include <WtsApi32.h>
 #include <ctype.h>
 #include <regex>
 #include <sstream>

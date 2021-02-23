@@ -1,18 +1,92 @@
+#include <Windows.h>
 #include <iostream>
 #include <string>
-#include <Windows.h>
 #include <WinUser.h>
-#include "src/methods.hpp"
-#include "WtsApi32.h"
-#include <ctype.h>
+#include <WtsApi32.h>
 #include <tlhelp32.h>
 #include <Shlwapi.h>
+#include <fstream>
+#include <direct.h>
 #include <process.h>
 #include <filesystem>
 
 const char* AppName = "ModLdr Installer";
 const char* DataFile = ".gmdpath";
 DWORD GD_PID = 0;
+
+namespace methods {
+    std::string replace(std::string const& original, std::string const& from, std::string const& to) {
+        std::string results;
+        std::string::const_iterator end = original.end();
+        std::string::const_iterator current = original.begin();
+        std::string::const_iterator next = std::search( current, end, from.begin(), from.end() );
+        while ( next != end ) {
+            results.append( current, next );
+            results.append( to );
+            current = next + from.size();
+            next = std::search( current, end, from.begin(), from.end() );
+        }
+        results.append( current, next );
+        return results;
+    }
+
+    void fsave (std::string _path, std::string _cont) {
+        std::ofstream file;
+        file.open(_path);
+        file << _cont;
+        file.close();
+    }
+
+    bool fcopy(std::string from, std::string to) {
+        if (!std::filesystem::exists(from))
+            return false;
+        std::ifstream src(from, std::ios::binary);
+        std::ofstream dst(to,   std::ios::binary);
+        dst << src.rdbuf();
+
+        return true;
+    }
+
+    bool proc_running(const char* _proc, DWORD* _pid = NULL) {
+        WTS_PROCESS_INFO* pWPIs = NULL;
+        DWORD dwProcCount = 0;
+        bool found = false;
+        if (WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, NULL, 1, &pWPIs, &dwProcCount))
+            for (DWORD i = 0; i < dwProcCount; i++)
+                if (strcmp((LPSTR)pWPIs[i].pProcessName, _proc) == 0) {
+                    found = true;
+                    if (_pid != NULL)
+                        *_pid = pWPIs[i].ProcessId;
+                }
+
+        if (pWPIs) {
+            WTSFreeMemory(pWPIs);
+            pWPIs = NULL;
+        }
+
+        return found;
+    }
+
+    std::string fread (std::string _path) {
+        std::ifstream in(_path, std::ios::in | std::ios::binary);
+        if (in) {
+            std::string contents;
+            in.seekg(0, std::ios::end);
+            contents.resize((size_t)in.tellg());
+            in.seekg(0, std::ios::beg);
+            in.read(&contents[0], contents.size());
+            in.close();
+            return(contents);
+        } throw(errno);
+    }
+
+    std::string workdir() {
+        char buff[FILENAME_MAX];
+        _getcwd(buff, FILENAME_MAX);
+        std::string current_working_dir(buff);
+        return current_working_dir;
+    }
+}
 
 // #define NOMSGBOX
 
@@ -48,7 +122,7 @@ bool findGDPath(std::string* _res) {
 
         std::ifstream f (configPath);
 
-        while (getline(f, line)) {
+        while (std::getline(f, line)) {
             if (line.find("BaseInstallFolder_") != std::string::npos) {
                 std::string val = line.substr(0, line.find_last_of("\""));
                 val = val.substr(val.find_last_of("\"") + 1);
@@ -160,7 +234,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Checking data path...";
 
     bool gddpcs = false;
-    if (methods::ewith(GDDataPath, "GeometryDash.exe"))
+    if (GDDataPath.ends_with("GeometryDash.exe"))
         if (std::filesystem::exists(GDDataPath))
             gddpcs = true;
     if (!gddpcs)
@@ -202,7 +276,7 @@ int main(int argc, char* argv[]) {
         
         std::string nMHpath = GDDataPath.substr(0, GDDataPath.find_last_of("\\") + 1) + act;
         if (!std::filesystem::exists(nMHpath))
-            if (methods::fcopy(act == req_files[i] ? act : act.substr(act.find_first_of("\\") + 1), nMHpath) != METH_SUCCESS)
+            if (!methods::fcopy(act == req_files[i] ? act : act.substr(act.find_first_of("\\") + 1), nMHpath))
                 throwErr("There was an error copying files (METH_COPY_FROM_DOESNT_EXIST, probably)", err::FILE_NOT_FOUND);
     }
 

@@ -1,9 +1,5 @@
 #pragma once
 
-#pragma warning( push, 0 )
-#include <cocos2d.h>
-#pragma warning( pop )
-
 #include "../offsets.hpp"
 
 // thanks pie & cos8o

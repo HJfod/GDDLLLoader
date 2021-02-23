@@ -7,7 +7,14 @@ set(RUNNER_NAME  OneTimeRunner)
 
 project(${PROJECT_NAME} VERSION 1.0.0)
 
-file(GLOB_RECURSE SOURCES main.cpp src/*.cpp)
+file(GLOB_RECURSE SOURCES 
+    main.cpp
+    src/*.cpp
+    submodules/nfd/src/nfd_win.cpp
+    submodules/nfd/src/nfd_common.c
+)
+
+set_source_files_properties(submodules/nfd/src/nfd_common.c PROPERTIES LANGUAGE CXX)
 
 set(WIN32 ON)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -25,6 +32,7 @@ target_include_directories(
     submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/third_party/win32/OGLES
     submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/win32
     submodules/MinHook/include
+    submodules/nfd/src/include
 )
 
 target_link_libraries(
@@ -36,6 +44,10 @@ target_link_libraries(
 # runner
 
 add_executable(${RUNNER_NAME} runner.cpp)
+
+set_source_files_properties( runner.cpp PROPERTIES LANGUAGE CXX )
+set_source_files_properties( runner.cpp PROPERTIES CXX_STANDARD 17 )
+set_source_files_properties( runner.cpp PROPERTIES CXX_STANDARD_REQUIRED ON )
 
 target_link_libraries(${RUNNER_NAME} WtsApi32)
 

@@ -4,3 +4,6 @@
 [submodule "submodules/MinHook"]
 	path = submodules/MinHook
 	url = https://github.com/TsudaKageyu/minhook
+[submodule "submodules/nfd"]
+	path = submodules/nfd
+	url = https://github.com/mlabbe/nativefiledialog

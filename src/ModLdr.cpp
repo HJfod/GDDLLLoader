@@ -1,12 +1,9 @@
+#include "offsets.hpp"
 #include "ModLdr.hpp"
-
-#pragma warning( push, 0 )
-#include <cocos2d.h>
-#pragma warning( pop )
-
 #include <MinHook.h>
 #include "layer/SettingsLayer.hpp"
 #include "layer/HelpLayer.hpp"
+#include "layer/ModLayer.hpp"
 #include "console.hpp"
 #include <filesystem>
 #include <algorithm>
@@ -48,6 +45,9 @@ void ModLdr::unload(HMODULE module) {
 void ModLdr::awaitUnload() {
     std::string inp;
     getline(std::cin, inp);
+
+    if (inp.starts_with("."))
+        ModLayer::test = std::stoi(inp.substr(1));
 
     if (inp != "e")
         ModLdr::awaitUnload();

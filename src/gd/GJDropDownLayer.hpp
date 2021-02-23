@@ -2,11 +2,9 @@
 
 #include "../offsets.hpp"
 
-#define PAD(size) char pad[size] = {};
-
 // thanks pie <3
 
-class GJListLayer : public cocos2d::CCLayerColor {};
+class GJListLayer;
 
 class GJDropDownLayer : public cocos2d::CCLayerColor {
 	protected:

@@ -1,7 +1,13 @@
 #pragma once
 
-#include <cstdint>
-#include <Windows.h>
+#ifndef INCLUDE_COCOS
+    #define INCLUDE_COCOS
+    #pragma warning( push, 0 )
+    #include <cocos2d.h>
+    #pragma warning( pop )
+#endif
+
+#define PAD(size) char pad[size] = {};
 
 #define offset_type inline const uintptr_t
 

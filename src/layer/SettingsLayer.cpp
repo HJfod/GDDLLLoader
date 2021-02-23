@@ -1,5 +1,5 @@
-#include "SettingsLayer.hpp"
 #include "ModLayer.hpp"
+#include "SettingsLayer.hpp"
 
 static cocos2d::CCNode* getc(cocos2d::CCNode* const& _o, int _ix) {
     return static_cast<cocos2d::CCNode*>(_o->getChildren()->objectAtIndex(_ix));
