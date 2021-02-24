@@ -19,6 +19,16 @@ bool ModLdr::Manager::loadMod(std::wstring _fn) {
     return false;
 }
 
+bool ModLdr::Manager::unloadMod(std::wstring _name) {
+    auto p = std::find(mods.begin(), mods.end(), _name);
+    if (p == mods.end())
+        return true;
+    
+    // code for removing mod goes here
+
+    return false;
+}
+
 void ModLdr::Manager::loadMods() {
     if (std::filesystem::exists(modFolder) &&
         std::filesystem::is_directory(modFolder))

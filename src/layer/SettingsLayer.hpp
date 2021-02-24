@@ -1,9 +1,5 @@
 #pragma once
 
-#pragma warning( push, 0 )
-#include <cocos2d.h>
-#pragma warning( pop )
-
 #include <MinHook.h>
 #include "../offsets.hpp"
 #include "../gd/ButtonSprite.hpp"

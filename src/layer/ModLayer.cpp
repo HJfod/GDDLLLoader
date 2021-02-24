@@ -1,12 +1,13 @@
 #include "ModLayer.hpp"
+#include "../offsets.hpp"
 #include "../ModManager.hpp"
 #include "../gd/ButtonSprite.hpp"
 #include "../gd/FLAlertLayer.hpp"
 #include "../gd/CustomListView.hpp"
 #include "../gd/GJListLayer.hpp"
+#include "../gd/CCScrollLayerExt.hpp"
 #include "MyScroll.hpp"
 #include <direct.h>
-#include <nfd.h>
 
 static cocos2d::CCMenuItem* addc(
     cocos2d::CCMenu* _p,
@@ -75,30 +76,28 @@ void ModLdr::ModLayer::showCredits(cocos2d::CCObject* pSender) {
 }
 
 void ModLdr::ModLayer::customSetup() {
-    GJListLayer* lr = this->m_pListLayer;
-
     auto winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
-    auto lrSize  = lr->getScaledContentSize();
+    auto lrSize  = this->m_pListLayer->getScaledContentSize();
 
     if (ModLdr::Manager::mods.size() != 0) {
-        auto l = cocos2d::CCLabelBMFont::create("No mods installed!", "bigFont.fnt");
+        auto noneText = cocos2d::CCLabelBMFont::create("No mods installed!", "bigFont.fnt");
 
-        l->setPosition(lrSize.width / 2, lrSize.height / 2);
-        l->setScale(.75);
+        noneText->setPosition(lrSize.width / 2, lrSize.height / 2);
+        noneText->setScale(.75);
         
-        this->m_pListLayer->addChild(l);
+        this->m_pListLayer->addChild(noneText);
     } else {
-        auto arr = cocos2d::CCArray::create();
+        //auto modListView = CustomListView::create(arr, 200.0, 70.0, 0x1);
+        /*
+        auto modListView = CCScrollLayerExt::create(
+            cocos2d::CCLayer::create(),
+            { 20, 10 },
+            0x0,
+            150.0,
+            100.0
+        );  //*/
 
-        arr->addObject(cocos2d::CCLabelBMFont::create("test text", "bigFont.fnt"));
-        arr->addObject(cocos2d::CCLabelBMFont::create("test 2", "bigFont.fnt"));
-        arr->addObject(cocos2d::CCLabelBMFont::create("yaypogs", "bigFont.fnt"));
-
-        CustomListView* c = CustomListView::create(arr, 365.0, 150.0, 4, 0);
-
-        GJListLayer* g = GJListLayer::create(c, "test", { 255, 0, 0, 255 }, 365.0, 150.0);
-
-        this->m_pListLayer->addChild(g);
+        //this->m_pListLayer->addChild(modListView);
     }
 
     addc(

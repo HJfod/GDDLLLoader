@@ -1,9 +1,10 @@
 #pragma once
 
-#ifndef INCLUDE_COCOS
-    #define INCLUDE_COCOS
+#ifndef INCLUDE_SUBMODULES
+    #define INCLUDE_SUBMODULES
     #pragma warning( push, 0 )
     #include <cocos2d.h>
+    #include <nfd.h>
     #pragma warning( pop )
 #endif
 

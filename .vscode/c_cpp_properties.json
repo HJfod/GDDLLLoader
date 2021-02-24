@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/extensions/GUI/CCScrollView/**"
             ],
             "defines": [
                 "_DEBUG",
