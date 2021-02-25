@@ -8,6 +8,7 @@
 #include "../gd/CCScrollLayerExt.hpp"
 #include "MyScroll.hpp"
 #include <direct.h>
+#include <MinHook.h>
 
 static cocos2d::CCMenuItem* addc(
     cocos2d::CCMenu* _p,
@@ -27,6 +28,38 @@ static cocos2d::CCMenuItem* addc(
 
     return b;
 }
+
+#define _NODE(x) static_cast<cocos2d::CCNode*>(x)
+#define _CHILD(x) getChildren()->objectAtIndex(x)
+
+static cocos2d::CCLayerColor* testt(const char* t) {
+    auto layer = cocos2d::CCLayerColor::create({ 255, 0, 0, 255 }, 150, 20);
+
+    auto bm = cocos2d::CCLabelBMFont::create(t, "bigFont.fnt");
+
+    layer->addChild(bm);
+
+    return layer;
+}
+
+class testing {
+    public:
+        void (__thiscall* testc)(void*, void*, int);
+        static void __fastcall testh(void* ecx, void* edx, void* stack0, int stack1) {
+            std::cout << "yoink" << stack1 << "\n";
+        }
+        static void init() {
+            MH_CreateHook(
+                (LPVOID)(ModLdr::base + 0x10ff0),
+                (LPVOID)testing::testh,
+                nullptr
+            );
+
+            MH_EnableHook(MH_ALL_HOOKS);
+
+            std::cout << "inited\n";
+        }
+};
 
 void ModLdr::ModLayer::showModFolder(cocos2d::CCObject*) {
     char buff[FILENAME_MAX];
@@ -87,17 +120,30 @@ void ModLdr::ModLayer::customSetup() {
         
         this->m_pListLayer->addChild(noneText);
     } else {
-        //auto modListView = CustomListView::create(arr, 200.0, 70.0, 0x1);
-        /*
-        auto modListView = CCScrollLayerExt::create(
-            cocos2d::CCLayer::create(),
-            { 20, 10 },
-            0x0,
-            150.0,
-            100.0
-        );  //*/
+        auto arr = cocos2d::CCArray::create();
 
-        //this->m_pListLayer->addChild(modListView);
+        arr->addObject(cocos2d::CCString::create("hey"));
+        arr->addObject(cocos2d::CCString::create("hey"));
+        arr->addObject(cocos2d::CCString::create("hey"));
+        arr->addObject(cocos2d::CCString::create("hey"));
+        arr->addObject(cocos2d::CCString::create("hey"));
+
+        auto modListView = CustomListView::create(arr, 200.0, 70.0, 0);
+
+        /*
+        for (unsigned int i = 0; i < arr->count(); i++) {
+            auto c = static_cast<cocos2d::CCLayerColor*>(arr->objectAtIndex(i));
+
+            auto cc = _NODE(modListView->_CHILD(0));
+
+            c->setPosition(100.0, 70.0 - i * 30.0);
+
+            cc->addChild(c);
+        }   //*/
+
+        modListView->setPosition(60, 60);
+
+        this->m_pListLayer->addChild(modListView);
     }
 
     addc(
