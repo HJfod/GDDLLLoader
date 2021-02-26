@@ -6,7 +6,6 @@
 #include "../gd/CustomListView.hpp"
 #include "../gd/GJListLayer.hpp"
 #include "../gd/CCScrollLayerExt.hpp"
-#include "MyScroll.hpp"
 #include <direct.h>
 #include <MinHook.h>
 
@@ -128,7 +127,7 @@ void ModLdr::ModLayer::customSetup() {
         arr->addObject(cocos2d::CCString::create("hey"));
         arr->addObject(cocos2d::CCString::create("hey"));
 
-        auto modListView = CustomListView::create(arr, 200.0, 70.0, 0);
+        auto modListView = InheritedView::create(arr, 200.0, 70.0, 0x0);
 
         /*
         for (unsigned int i = 0; i < arr->count(); i++) {

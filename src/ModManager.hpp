@@ -12,3 +12,4 @@ namespace ModLdr {
         bool unloadMod(std::wstring);
     }
 }
+
