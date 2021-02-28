@@ -135,22 +135,14 @@ class InheritedView : public CustomListView {
         }
 
         static InheritedView* create(cocos2d::CCArray* _a, float _w, float _h, int _bt) {
-            intptr_t dumbfuck;
-
             InheritedView* pRet = new InheritedView();
             // InheritedView is inherited from CustomListView
 
-            __asm { mov dumbfuck, ecx }
-
-            if (pRet) {
-				pRet->constructor();
-                if (pRet->init(_a, _w, _h, dumbfuck, _bt)) {
-                    std::cout << "yoot\n";
-                    
-                    pRet->autorelease();
-                    return pRet;
-                } else
-                    pRet->destructor();
+            if (pRet && pRet->init(_a, _w, _h, 0x0, _bt)) {
+                std::cout << "yoot\n";
+                
+                pRet->autorelease();
+                return pRet;
             }
             CC_SAFE_DELETE(pRet);
             return nullptr;
