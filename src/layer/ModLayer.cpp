@@ -6,6 +6,7 @@
 #include "../gd/CustomListView.hpp"
 #include "../gd/GJListLayer.hpp"
 #include "../gd/CCScrollLayerExt.hpp"
+#include "../gd/CCMenuItemToggler.hpp"
 #include <direct.h>
 #include <MinHook.h>
 #include <algorithm>
@@ -59,54 +60,71 @@ class ModListItem {
         cocos2d::CCLayer* getActual(cocos2d::CCSize _size) {
             auto layer = cocos2d::CCLayer::create();
 
+            auto menu = cocos2d::CCMenu::create();
+
             layer->setContentSize(_size);
 
             auto bm = cocos2d::CCLabelBMFont::create(this->m_text.c_str(), "bigFont.fnt");
 
-            bm->setScale(.75);
+            bm->limitLabelWidth(200.0f, .75f, .2f);
 
-            bm->limitLabelWidth(200.0f, .9f, 0.2f);
-
-            bm->setPosition(
-                bm->getScaledContentSize().width / 2 + 20,
-                _size.height / 2 + 2
+            auto bmItem = cocos2d::CCMenuItemLabel::create(
+                bm, menu, (cocos2d::SEL_MenuHandler)&ModListItem::showInfo
             );
 
-            layer->addChild(bm);
+            bmItem->setScale(.75);
 
-
-            auto menu = cocos2d::CCMenu::create();
-
-            auto viewSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
-            viewSprite->setScale(.8f);
-
-            auto viewButton = ButtonSprite::create(
-                viewSprite,
-                menu,
-                (cocos2d::SEL_MenuHandler)&ModListItem::showInfo
+            bmItem->setPosition(
+                - _size.width / 2 + bmItem->getScaledContentSize().width / 2 + 20,
+                4
             );
 
-            viewButton->setUserData((void*)(new std::string(this->m_info)));
+            bmItem->setUserData((void*)(new std::string(this->m_info)));
 
-            menu->addChild(viewButton);
+            menu->addChild(bmItem);
 
 
-            auto delSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
-            delSprite->setScale(.8f);
+            auto enabledToggle = CCMenuItemToggler::createWithScale(menu, nullptr, .8f);
 
-            auto delButton = ButtonSprite::create(
-                delSprite,
+            enabledToggle->setPositionX(_size.width / 2 - 30);
+
+            menu->addChild(enabledToggle);
+
+
+            auto moveUpSprite = cocos2d::CCSprite::createWithSpriteFrameName("edit_upBtn_001.png");
+            moveUpSprite->setScale(.7f);
+            moveUpSprite->setRotation(0);
+
+            auto upButton = ButtonSprite::create(
+                moveUpSprite,
                 menu,
                 nullptr
             );
 
-            delButton->setPositionX(-viewButton->getScaledContentSize().width / 2 - 20);
+            upButton->setPositionX(_size.width / 2 - 60);
+            upButton->setPositionY(7);
 
-            menu->addChild(delButton);
+            menu->addChild(upButton);
+
+
+            auto moveDownSprite = cocos2d::CCSprite::createWithSpriteFrameName("edit_upBtn_001.png");
+            moveDownSprite->setScale(.7f);
+            moveDownSprite->setRotation(180);
+
+            auto downButton = ButtonSprite::create(
+                moveDownSprite,
+                menu,
+                nullptr
+            );
+
+            downButton->setPositionX(_size.width / 2 - 60); // -80
+            downButton->setPositionY(-7);
+
+            menu->addChild(downButton);
 
 
             menu->setPosition(
-                _size.width - viewButton->getScaledContentSize().width / 2 - 15,
+                _size.width / 2,
                 _size.height / 2
             );
 
@@ -133,6 +151,9 @@ class ModListItem {
 
 static constexpr const int modListTag = 420;
 
+// DO THIS FOR DISABLING MODS
+// "like it renames the dll to .dll.disabled" -mat
+
 void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     if (_list->getChildByTag(modListTag) != nullptr)
         _list->removeChildByTag(modListTag);
@@ -153,7 +174,11 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
                 name = str.substr(str.find_last_of("\\") + 1);
             else name = str;
 
-            return new ModListItem(name, ("Path: <cy>" + str + "</c>"));
+            return new ModListItem(
+                // substr to remove the .dll
+                name.substr(0, name.find_last_of(".")),
+                ("Path: <cy>" + str + "</c>")
+            );
         }
     );
 
