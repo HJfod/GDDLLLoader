@@ -11,6 +11,7 @@ namespace ModLdr {
             void showCredits(cocos2d::CCObject*);
             void addMod(cocos2d::CCObject*);
             void showModFolder(cocos2d::CCObject*);
+            void reloadMods(cocos2d::CCObject*);
 
             inline static int test = 0;
 

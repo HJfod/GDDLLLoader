@@ -13,8 +13,11 @@ bool ModLdr::Manager::loadMod(std::wstring _fn) {
     
     HMODULE h = LoadLibraryW(_fn.c_str());
 
-    if (h != nullptr)
+    if (h != nullptr) {
+        mods.push_back(_fn);
+
         return true;
+    }
 
     return false;
 }

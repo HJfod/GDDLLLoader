@@ -4,6 +4,10 @@
 
 class CCScrollLayerExt : public cocos2d::CCLayer {
     public:
+        virtual void destructor() {
+            
+        }
+
         static CCScrollLayerExt* create(
             cocos2d::CCLayer* layer,
             cocos2d::CCPoint pos,

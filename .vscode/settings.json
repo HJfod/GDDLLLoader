@@ -68,6 +68,13 @@
         "queue": "cpp",
         "regex": "cpp",
         "stack": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "array": "cpp",
+        "clocale": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "mutex": "cpp",
+        "optional": "cpp",
+        "shared_mutex": "cpp"
     }
 }

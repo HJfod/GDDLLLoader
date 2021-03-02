@@ -4,6 +4,52 @@
 
 #pragma runtime_checks("s", off)
 
+class SongObject : public cocos2d::CCNode {
+    public:
+        virtual cocos2d::CCObject* destructor() {
+            return reinterpret_cast<cocos2d::CCObject*(__thiscall*)(
+                cocos2d::CCObject*, bool
+            )>(
+                ModLdr::base + 0x10380
+            )(
+                this, true
+            );
+        }
+
+        static SongObject* create(size_t _id) {
+            auto obj = new SongObject();
+
+            // what the fuck
+            // this is just obj->0x8 = _id
+            *reinterpret_cast<size_t*>(reinterpret_cast<std::uintptr_t>(obj) + 0x08) = _id;
+
+            return obj;
+        }
+};
+
+class StatsObject : public cocos2d::CCNode {
+    public:
+        virtual cocos2d::CCObject* destructor() {
+            return reinterpret_cast<cocos2d::CCObject*(__thiscall*)(
+                cocos2d::CCObject*, bool
+            )>(
+                ModLdr::base + 0x10380
+            )(
+                this, true
+            );
+        }
+
+        static StatsObject* create(std::string _text, int _count) {
+            return reinterpret_cast<StatsObject*(__fastcall*)(
+                std::string, int
+            )>(
+                ModLdr::base + 0x5daa0
+            )(
+                _text, _count
+            );
+        }
+};
+
 class CustomListView : public cocos2d::CCLayer {
     public:
         virtual void destructor() {
@@ -48,7 +94,7 @@ class CustomListView : public cocos2d::CCLayer {
             );
         }
 
-        // dunno what vftable this is, prolly like scrolllayer or some shit
+        // TableViewDelegate vftable
         virtual void unknown0() {}
         virtual void unknown1() {}
         virtual void unknown2() {}
@@ -57,7 +103,7 @@ class CustomListView : public cocos2d::CCLayer {
         virtual void unknown5() {}
         virtual void unknown6() {}
 
-        // prolly boomlistview vftable or some shit
+        // TableViewDataSource vftable
         virtual void unknown0_0() {}
         virtual bool unknown1_0() { return true; }
         virtual void unknown2_0() {}
@@ -80,6 +126,23 @@ class CustomListView : public cocos2d::CCLayer {
             __asm add esp, 0x4
 
             return ret;
+        }
+
+        static CustomListView* create_(cocos2d::CCArray* _arr, float _w, float _h, int _n) {
+            __asm {
+                movss xmm1, [_h]
+                movss xmm2, [_w]
+            }
+
+            auto clv = new CustomListView();
+
+            if (clv && clv->init(_arr, _w, _h, 0x0, _n)) {
+                clv->autorelease();
+                return clv;
+            }
+
+            CC_SAFE_DELETE(clv);
+            return nullptr;
         }
 
         bool init(cocos2d::CCArray* _arr, float _w, float _h, intptr_t _idk, int _n) {
@@ -127,6 +190,7 @@ class CustomListView : public cocos2d::CCLayer {
 			)(this, true);
         }
 };
+#pragma runtime_checks("s", restore)
 
 class InheritedView : public CustomListView {
     public:
@@ -148,5 +212,4 @@ class InheritedView : public CustomListView {
             return nullptr;
         }
 };
-#pragma runtime_checks("s", restore)
 
