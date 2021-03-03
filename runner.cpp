@@ -154,9 +154,8 @@ enum err {
     CANT_OPEN_GD
 };
 
-const char* req_files[3] = {
+const char* req_files[2] = {
     "ModLdr.dll",
-    "DL_mods.png|resources",
     "DL_folder.png|resources"
 };
 

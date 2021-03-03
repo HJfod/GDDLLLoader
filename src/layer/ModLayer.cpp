@@ -7,6 +7,7 @@
 #include "../gd/GJListLayer.hpp"
 #include "../gd/CCScrollLayerExt.hpp"
 #include "../gd/CCMenuItemToggler.hpp"
+#include "DLLLayer.hpp"
 #include <direct.h>
 #include <MinHook.h>
 #include <algorithm>
@@ -31,38 +32,19 @@ static cocos2d::CCMenuItem* addc(
     return b;
 }
 
-std::string utf8_encode(const std::wstring &wstr) {
-    if( wstr.empty() ) return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-    std::string strTo( size_needed, 0 );
-    WideCharToMultiByte                  (CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-    return strTo;
-}
-
-std::wstring utf8_decode(const std::string &str) {
-    if( str.empty() ) return std::wstring();
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
-    std::wstring wstrTo( size_needed, 0 );
-    MultiByteToWideChar                  (CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
-    return wstrTo;
-}
-
-template<typename T>
-static T getChild(cocos2d::CCNode* x, int i) {
-    return static_cast<T>(x->getChildren()->objectAtIndex(i));
-}
-
 class ModListItem {
-    std::string m_text;
-    std::string m_info;
+    ModLdr::Manager::Mod* m_mod;
+    int m_index;
 
     public:
+        static const int labelTag = 5;
+
         cocos2d::CCMenu* getActual(cocos2d::CCSize _size) {
             auto menu = cocos2d::CCMenu::create();
 
             menu->setContentSize(_size);
 
-            auto bm = cocos2d::CCLabelBMFont::create(this->m_text.c_str(), "bigFont.fnt");
+            auto bm = cocos2d::CCLabelBMFont::create(this->m_mod->name.c_str(), "bigFont.fnt");
 
             bm->limitLabelWidth(200.0f, .75f, .2f);
 
@@ -77,17 +59,31 @@ class ModListItem {
                 4
             );
 
-            bmItem->setUserData((void*)(new std::string(this->m_info)));
+            if (!this->m_mod->loaded)
+                bmItem->setColor({ 150, 150, 150 });
+            
+            bmItem->setTag(labelTag);
+
+            bmItem->setUserData(reinterpret_cast<void*>(this->m_mod));
 
             menu->addChild(bmItem);
 
 
-            auto enabledToggle = CCMenuItemToggler::createWithScale(menu, nullptr, .8f);
+            auto enabledToggle = CCMenuItemToggler::createWithScale(
+                menu,
+                (cocos2d::SEL_MenuHandler)&ModLdr::ModLayer::toggleMod,
+                .8f
+            );
+
+            enabledToggle->toggle(this->m_mod->enabled);
+
+            enabledToggle->setUserData(reinterpret_cast<void*>(this->m_mod));
 
             enabledToggle->setPositionX(_size.width / 2 - 30);
 
             menu->addChild(enabledToggle);
 
+            /*
 
             auto moveUpSprite = cocos2d::CCSprite::createWithSpriteFrameName("edit_upBtn_001.png");
             moveUpSprite->setScale(.7f);
@@ -120,6 +116,8 @@ class ModListItem {
 
             menu->addChild(downButton);
 
+            //*/
+
 
             menu->setPosition(
                 _size.width / 2,
@@ -131,31 +129,38 @@ class ModListItem {
         }
 
         void showInfo(cocos2d::CCObject* pSender) {
+            std::string info;
+
+            auto mod = reinterpret_cast<ModLdr::Manager::Mod*>(
+                static_cast<cocos2d::CCNode*>(pSender)->getUserData()
+            );
+
+            info = "Path: <cy>" + mod->path + "</c>";
+
             auto fl = FLAlertLayer::create(
-                nullptr, "Info", "OK", nullptr, 240.0f, 0, 0,
-                reinterpret_cast<std::string*>(static_cast<cocos2d::CCNode*>(pSender)->getUserData())->c_str()
+                nullptr, "Info", "OK", nullptr, 350.0f, 0, 0, info.c_str()
             );
 
             fl->show();
         }
 
-        ModListItem(std::string _text, std::string _info = "No info available... somehow") {
-            this->m_text = _text;
-            this->m_info = _info;
+        ModListItem(ModLdr::Manager::Mod* _mod, int _ix) {
+            this->m_mod = _mod;
+            this->m_index = _ix;
         }
 };
 
 static constexpr const int modListTag = 420;
+static constexpr const int noModsTag = 421;
 
-static constexpr const cocos2d::ccColor3B listBGLight { 194, 114, 62 };
-static constexpr const cocos2d::ccColor3B listBGDark  { 161, 88,  44 };
-
-// DO THIS FOR DISABLING MODS
-// "like it renames the dll to .dll.disabled" -mat
+bool shownInfoAboutBasicDLLs = false;
 
 void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     if (_list->getChildByTag(modListTag) != nullptr)
         _list->removeChildByTag(modListTag);
+
+    if (_list->getChildByTag(noModsTag) != nullptr)
+        _list->removeChildByTag(noModsTag);
 
     // wow this code is terrible
     // but it works so eh
@@ -165,23 +170,16 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     // allocate space for modlist
     actualList.resize(ModLdr::Manager::mods.size());
 
+    int modIndex = 0;
     // turn modlist into list of modlistitem
     std::transform(
         ModLdr::Manager::mods.begin(),
         ModLdr::Manager::mods.end(),
         actualList.begin(),
-        [](std::wstring _str) -> ModListItem* {
-            std::string str = utf8_encode(_str);
-            std::string name;
-            
-            if (str.find("\\") != std::string::npos)
-                name = str.substr(str.find_last_of("\\") + 1);
-            else name = str;
-
+        [&modIndex](ModLdr::Manager::Mod* _mod) -> ModListItem* {
             return new ModListItem(
-                // substr to remove the .dll
-                name.substr(0, name.find_last_of(".")),
-                ("Path: <cy>" + str + "</c>")
+                _mod,
+                modIndex++
             );
         }
     );
@@ -204,7 +202,7 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     auto listc = getChild<cocos2d::CCLayerColor*>(list, 0);
 
     // height of list items
-    float height = 60.0f;
+    float height = 40.0f;
 
     for (unsigned int i = 0; i < dummyArray->count(); i++) {
         // get list item by index
@@ -270,6 +268,42 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     while(!actualList.empty()) delete actualList.back(), actualList.pop_back();
 }
 
+void ModLdr::ModLayer::toggleMod(cocos2d::CCObject* pSender) {
+    auto send = static_cast<CCMenuItemToggler*>(pSender);
+
+    auto mod = reinterpret_cast<Manager::Mod*>(send->getUserData());
+
+    if (mod->type == Manager::Mod::Type::DLL)
+        if (!shownInfoAboutBasicDLLs) {
+            auto fl = FLAlertLayer::create(
+                nullptr, "Warning", "OK", nullptr, 320.0f, 0, 0,
+                "<cc>Warning</c>: While standard <cj>DLL</c>s can be <cg>enabled</c> " \
+                "live, they can not be <cr>disabled</c> without a <co>restart</c>."
+            );
+
+            fl->show();
+
+            shownInfoAboutBasicDLLs = true;
+        }
+    
+    bool load = mod->loaded;
+
+    if (!ModLdr::Manager::enableMod(
+        mod, send->isToggled()
+    )) {
+        auto fl = FLAlertLayer::create(
+            nullptr, "Warning", "OK", nullptr, 320.0f, 0, 0,
+            "<cc>Error</c>: Unable to load DLL!" \
+            "(A <co>restart</c> will probably fix the issue.)"
+        );
+
+        fl->show();
+    } else if (!load && send->isToggled())
+        static_cast<cocos2d::CCMenuItemLabel*>(
+            send->getParent()->getChildByTag(ModListItem::labelTag)
+        )->setColor({ 255, 255, 255 });
+}
+
 void ModLdr::ModLayer::showModFolder(cocos2d::CCObject*) {
     char buff[FILENAME_MAX];
     _getcwd(buff, FILENAME_MAX);
@@ -295,7 +329,15 @@ void ModLdr::ModLayer::addMod(cocos2d::CCObject* pSender) {
             static_cast<cocos2d::CCNode*>(pSender)->getUserData()
         );
 
+        list->setColor(listBGLight);
+        list->setOpacity(255);
         renderList(list, list->getScaledContentSize());
+
+        FLAlertLayer::create(
+            nullptr, "Warning", "OK", nullptr, 250.0, 0, 0,
+            "<co>Warning</c>: Due to an unknown <cc>bug</c>, you need to re-enter " \
+            "the <cg>layer</c> for the list to properly work."
+        )->show();
 
         free(path);
     }
@@ -314,10 +356,11 @@ void ModLdr::ModLayer::showInfo(cocos2d::CCObject* pSender) {
 
 void ModLdr::ModLayer::showCredits(cocos2d::CCObject* pSender) {
     auto f = FLAlertLayer::create(
-        nullptr, "Credits", "OK", nullptr, 300.0, 0, 0,
+        nullptr, "Credits", "OK", nullptr, 320.0, 0, 0,
         "Developed by <cl>HJfod</c>\n"                      \
         "Based on <cr>GDDLLLoader</c> by <cg>adaf</c>\n\n"    \
-        "<co>Extra special thank you to</c> <cy>PoweredByPie</c>"
+        "<co>Extra special thank you to</c> <cy>PoweredByPie</c>\n\n" \
+        "Version <cg>" + std::string(ModLdr::version) + "</c>"
     );
 
     f->show();
@@ -330,7 +373,25 @@ void ModLdr::ModLayer::reloadMods(cocos2d::CCObject* pSender) {
         static_cast<cocos2d::CCNode*>(pSender)->getUserData()
     );
 
+    list->setColor(listBGLight);
+    list->setOpacity(255);
     renderList(list, list->getScaledContentSize());
+
+    FLAlertLayer::create(
+        nullptr, "Warning", "OK", nullptr, 250.0, 0, 0,
+        "<co>Warning</c>: Due to an unknown <cc>bug</c>, you need to re-enter" \
+        "the <cg>layer</c> for the list to properly work."
+    )->show();
+}
+
+void ModLdr::ModLayer::showLoadedDLLs(cocos2d::CCObject* pSender) {
+    auto layer = reinterpret_cast<ModLayer*>(
+        static_cast<cocos2d::CCNode*>(pSender)->getUserData()
+    );
+
+    layer->showDLLList = true;
+
+    layer->hideLayer(false);
 }
 
 void ModLdr::ModLayer::customSetup() {
@@ -342,6 +403,8 @@ void ModLdr::ModLayer::customSetup() {
 
         noneText->setPosition(lrSize.width / 2, lrSize.height / 2);
         noneText->setScale(.75);
+
+        noneText->setTag(noModsTag);
         
         this->m_pListLayer->addChild(noneText);
     } else {
@@ -349,6 +412,7 @@ void ModLdr::ModLayer::customSetup() {
         this->m_pListLayer->setOpacity(255);
         renderList(this->m_pListLayer, lrSize);
     }
+    
 
     addc(
         this->m_pButtonMenu,
@@ -387,6 +451,28 @@ void ModLdr::ModLayer::customSetup() {
         &ModLdr::ModLayer::reloadMods
     );
     update->setUserData(this->m_pListLayer);
+
+    auto dlls = addc(
+        this->m_pButtonMenu,
+        ButtonSpriteSpr::create("View Loaded DLLs", 0, false, "goldFont.fnt", "GJ_button_01.png", 0, 0.8f),
+        { winSize.width / 2 - this->m_pButtonMenu->getPositionX(), -winSize.height + 48 },
+        &ModLdr::ModLayer::showLoadedDLLs
+    );
+    dlls->setUserData(this);
+}
+
+void ModLdr::ModLayer::layerHidden() {
+    if (this->showDLLList) {
+        auto l = DLLLayer::create();
+
+        cocos2d::CCDirector::sharedDirector()->getRunningScene()->addChild(l);
+
+        l->showLayer(false);
+
+        this->showDLLList = false;
+    }
+
+    GJDropDownLayer::layerHidden();
 }
 
 ModLdr::ModLayer* ModLdr::ModLayer::create() {

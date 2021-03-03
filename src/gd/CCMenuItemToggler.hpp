@@ -71,6 +71,12 @@ class CCMenuItemToggler : public cocos2d::CCMenuItem {
             );
         }
 
+        bool isToggled() {
+            return *reinterpret_cast<bool*>(
+                reinterpret_cast<uintptr_t>(this) + 0x114
+            );
+        }
+
         static CCMenuItemToggler* createWithText(
             const char* _text,
             cocos2d::CCMenu* _parent,

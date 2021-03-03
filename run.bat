@@ -49,7 +49,6 @@ if not exist Release\ModLdr.dll (
     goto done
 )
 
-xcopy /y ..\resources\DL_mods.png Release\DL_mods.png*
 xcopy /y ..\resources\DL_folder.png Release\DL_folder.png*
 
 :run

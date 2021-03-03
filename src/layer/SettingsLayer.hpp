@@ -1,10 +1,11 @@
 #pragma once
 
-#include <MinHook.h>
 #include "../offsets.hpp"
 #include "../gd/ButtonSprite.hpp"
 #include "../gd/FLAlertLayer.hpp"
 #include "../gd/GJDropDownLayer.hpp"
+
+#include <MinHook.h>
 
 namespace ModLdr {
     class SettingsLayer {
