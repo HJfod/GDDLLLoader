@@ -57,12 +57,10 @@ class ModListItem {
     std::string m_info;
 
     public:
-        cocos2d::CCLayer* getActual(cocos2d::CCSize _size) {
-            auto layer = cocos2d::CCLayer::create();
-
+        cocos2d::CCMenu* getActual(cocos2d::CCSize _size) {
             auto menu = cocos2d::CCMenu::create();
 
-            layer->setContentSize(_size);
+            menu->setContentSize(_size);
 
             auto bm = cocos2d::CCLabelBMFont::create(this->m_text.c_str(), "bigFont.fnt");
 
@@ -127,11 +125,9 @@ class ModListItem {
                 _size.width / 2,
                 _size.height / 2
             );
-
-            layer->addChild(menu);
             
 
-            return layer;
+            return menu;
         }
 
         void showInfo(cocos2d::CCObject* pSender) {
@@ -151,6 +147,9 @@ class ModListItem {
 
 static constexpr const int modListTag = 420;
 
+static constexpr const cocos2d::ccColor3B listBGLight { 194, 114, 62 };
+static constexpr const cocos2d::ccColor3B listBGDark  { 161, 88,  44 };
+
 // DO THIS FOR DISABLING MODS
 // "like it renames the dll to .dll.disabled" -mat
 
@@ -158,10 +157,15 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     if (_list->getChildByTag(modListTag) != nullptr)
         _list->removeChildByTag(modListTag);
 
+    // wow this code is terrible
+    // but it works so eh
+
     std::vector<ModListItem*> actualList;
 
+    // allocate space for modlist
     actualList.resize(ModLdr::Manager::mods.size());
 
+    // turn modlist into list of modlistitem
     std::transform(
         ModLdr::Manager::mods.begin(),
         ModLdr::Manager::mods.end(),
@@ -182,46 +186,87 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
         }
     );
 
+    // dummy array for the modlistview
+    // this is needed so we get the right amount of
+    // children in the listview
     auto dummyArray = cocos2d::CCArray::create();
 
     for (auto l : actualList)
         dummyArray->addObject(new cocos2d::CCObject());
 
+    // why do i add 25 to the height? because for
+    // some god-knows reason the list is otherwise
+    // wrongly positioned! why? don't know!
     auto modListView = CustomListView::create(dummyArray, _size.width, _size.height + 25, 0x0);
 
+    // get children
+    auto list  = getChild<cocos2d::CCLayer*>(modListView, 0);
+    auto listc = getChild<cocos2d::CCLayerColor*>(list, 0);
+
+    // height of list items
+    float height = 60.0f;
+
     for (unsigned int i = 0; i < dummyArray->count(); i++) {
-        auto list  = getChild<cocos2d::CCLayer*>(modListView, 0);
-        auto listc = getChild<cocos2d::CCLayerColor*>(list, 0);
-
+        // get list item by index
         auto childpar = getChild<cocos2d::CCLayer*>(listc, i);
+        
+        // resize & reposition child to match our
+        // desired height
+        childpar->setPositionY(childpar->getPositionY() * ( height / childpar->getContentSize().height ));
+        childpar->setContentSize({ childpar->getContentSize().width, height });
 
+        // get child background layer
         auto childbg = getChild<cocos2d::CCLayerColor*>(childpar, 0);
 
+        // setZOrder is because GD for some reason
+        // draws lines wherever the fuck it wants
+        // in the childpar node, so to fix that we
+        // just make sure we're drawing on top of it
         childbg->setOpacity(255);
+        childbg->setZOrder(100);
 
+        // make every other bg the darker version
         if (i % 2 == 0)
             // good ol' hardcoded color values
-            childbg->setColor({ 161, 88, 44 });
+            childbg->setColor(listBGDark);
         else
-            childbg->setColor({ 194, 114, 62 });
+            childbg->setColor(listBGLight);
 
-        
+        // resize background to match new item height
+        childbg->setContentSize(childpar->getScaledContentSize());
+
+        // get child foreground layer
         auto childfg = getChild<cocos2d::CCLayer*>(childpar, 1);
 
-        childfg->addChild(actualList.at(i)->getActual(childbg->getScaledContentSize()));
+        // generate content for layer from our own
+        // ModMenuItem class
+        childfg->addChild(actualList.at(i)->getActual(childpar->getScaledContentSize()));
+        childfg->setZOrder(101);
 
+        // resize foreground to match new item height
+        childfg->setContentSize(childpar->getScaledContentSize());
 
+        // create the border between items
         auto border = cocos2d::CCLayerColor::create({ 0, 0, 0, 150 }, _size.width, 1);
 
         border->setPosition(0, 0);
+        border->setZOrder(500);
 
         childpar->addChild(border);
     }
 
+    // resize list to match the size of our new resized list items
+    listc->setContentSize({ listc->getContentSize().width, dummyArray->count() * height });
+
+    // move list scroll position to the top
+    listc->setPositionY(dummyArray->count() * -height + _size.height);
+
+    // set tag so we can remove the modlist on refresh
     modListView->setTag(modListTag);
 
     _list->addChild(modListView);
 
+    // clean up list
     while(!actualList.empty()) delete actualList.back(), actualList.pop_back();
 }
 
@@ -299,8 +344,11 @@ void ModLdr::ModLayer::customSetup() {
         noneText->setScale(.75);
         
         this->m_pListLayer->addChild(noneText);
-    } else
+    } else {
+        this->m_pListLayer->setColor(listBGLight);
+        this->m_pListLayer->setOpacity(255);
         renderList(this->m_pListLayer, lrSize);
+    }
 
     addc(
         this->m_pButtonMenu,
