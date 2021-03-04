@@ -7,19 +7,20 @@
 #include "../gd/GJListLayer.hpp"
 #include "../gd/CCScrollLayerExt.hpp"
 #include "../gd/CCMenuItemToggler.hpp"
+#include "ModInfoLayer.hpp"
 #include "DLLLayer.hpp"
 #include <direct.h>
 #include <MinHook.h>
 #include <algorithm>
 #include <filesystem>
 
-static cocos2d::CCMenuItem* addc(
+static CCMenuItemSpriteExtraGD* addc(
     cocos2d::CCMenu* _p,
     cocos2d::CCSprite* _spr,
     cocos2d::CCPoint _pos,
     void (ModLdr::ModLayer::*_cb)(cocos2d::CCObject*)
 ) {
-    ButtonSprite* b = ButtonSprite::create(
+    CCMenuItemSpriteExtraGD* b = CCMenuItemSpriteExtraGD::create(
         _spr,
         _p,
         (cocos2d::SEL_MenuHandler)_cb
@@ -89,7 +90,7 @@ class ModListItem {
             moveUpSprite->setScale(.7f);
             moveUpSprite->setRotation(0);
 
-            auto upButton = ButtonSprite::create(
+            auto upButton = CCMenuItemSpriteExtraGD::create(
                 moveUpSprite,
                 menu,
                 nullptr
@@ -105,7 +106,7 @@ class ModListItem {
             moveDownSprite->setScale(.7f);
             moveDownSprite->setRotation(180);
 
-            auto downButton = ButtonSprite::create(
+            auto downButton = CCMenuItemSpriteExtraGD::create(
                 moveDownSprite,
                 menu,
                 nullptr
@@ -129,19 +130,11 @@ class ModListItem {
         }
 
         void showInfo(cocos2d::CCObject* pSender) {
-            std::string info;
-
             auto mod = reinterpret_cast<ModLdr::Manager::Mod*>(
                 static_cast<cocos2d::CCNode*>(pSender)->getUserData()
             );
 
-            info = "Path: <cy>" + mod->path + "</c>";
-
-            auto fl = FLAlertLayer::create(
-                nullptr, "Info", "OK", nullptr, 350.0f, 0, 0, info.c_str()
-            );
-
-            fl->show();
+            ModLdr::ModInfoLayer::create(mod)->show();
         }
 
         ModListItem(ModLdr::Manager::Mod* _mod, int _ix) {
@@ -394,6 +387,31 @@ void ModLdr::ModLayer::showLoadedDLLs(cocos2d::CCObject* pSender) {
     layer->hideLayer(false);
 }
 
+class ClickModWebPageOpen : public FLAlertLayerProtocol {
+    virtual void FLAlert_Clicked(FLAlertLayer*, bool btn2) {
+        if (btn2)
+            ShellExecuteW(
+                0,
+                0,
+                L"https://docs.google.com/document/d/1w-myD5wYR9tbTT87Msaq3Gv6oDvIbtsQBgj6mil0tk8",
+                0,
+                0,
+                SW_SHOW
+            );
+    };
+};
+
+void ModLdr::ModLayer::openModListPage(cocos2d::CCObject* pSender) {
+    FLAlertLayer::create(
+        new ClickModWebPageOpen(),
+        "Open Mod Page?",
+        "Cancel", "View",
+        240.0f,
+        "Do you want to open <cj>List of GD Mods</c>?\n" \
+        "<cr>(External website)</c>"
+    )->show();
+}
+
 void ModLdr::ModLayer::customSetup() {
     auto winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
     auto lrSize  = this->m_pListLayer->getScaledContentSize();
@@ -454,11 +472,18 @@ void ModLdr::ModLayer::customSetup() {
 
     auto dlls = addc(
         this->m_pButtonMenu,
-        ButtonSpriteSpr::create("View Loaded DLLs", 0, false, "goldFont.fnt", "GJ_button_01.png", 0, 0.8f),
-        { winSize.width / 2 - this->m_pButtonMenu->getPositionX(), -winSize.height + 48 },
+        ButtonSprite::create("View DLLs", 0, false, "goldFont.fnt", "GJ_button_01.png", 0, 0.8f, .60f),
+        { 18, -winSize.height + 84 },
         &ModLdr::ModLayer::showLoadedDLLs
     );
     dlls->setUserData(this);
+
+    addc(
+        this->m_pButtonMenu,
+        ButtonSprite::create("Download More Mods", 0, false, "goldFont.fnt", "GJ_button_01.png", 0, 0.8f),
+        { winSize.width / 2 - this->m_pButtonMenu->getPositionX(), -winSize.height + 48 },
+        &ModLdr::ModLayer::openModListPage
+    );
 }
 
 void ModLdr::ModLayer::layerHidden() {

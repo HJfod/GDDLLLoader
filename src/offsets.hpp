@@ -8,7 +8,9 @@
     #pragma warning( pop )
 #endif
 
-#define PAD(size) char pad[size] = {};
+#define __STR_CAT___(str1, str2) str1##str2
+#define __STR_CAT__(str1, str2) __STR_CAT___(str1, str2)
+#define PAD(size) char __STR_CAT__(pad, __LINE__)[size] = {};
 
 #define offset_type inline const uintptr_t
 
@@ -22,7 +24,7 @@ static T getChild(cocos2d::CCNode* x, int i) {
 
 namespace ModLdr {
     offset_type base = (uintptr_t)GetModuleHandleA(0);
-    static constexpr const char* version = "v1.1 DEV";
+    static constexpr const char* version = "v1.2 DEV";
 
     namespace offsets {
         offset_type MenuLayerInit           = base + 0x1907b0;

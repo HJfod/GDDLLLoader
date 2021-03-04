@@ -39,7 +39,7 @@ cmake .. -A Win32 -Thost=x86
 echo.
 echo %ESC%[92m • Compiling library...%ESC%[0m
 
-msbuild ModLdr.sln /p:Configuration=Release /verbosity:quiet /p:PlatformTarget=x86
+msbuild ModLdr.sln /p:Configuration=Release /verbosity:minimal /p:PlatformTarget=x86
 
 rem clang++ ../runner.cpp -std=c++20 -o Release/OneTimeRunner.exe -lWtsApi32 -luser32 -DNOMSGBOX
 

@@ -15,6 +15,7 @@ namespace ModLdr {
             void reloadMods(cocos2d::CCObject*);
             void toggleMod(cocos2d::CCObject*);
             void showLoadedDLLs(cocos2d::CCObject*);
+            void openModListPage(cocos2d::CCObject*);
 
             inline static int test = 0;
 
