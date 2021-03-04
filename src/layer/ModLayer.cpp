@@ -7,6 +7,7 @@
 #include "../gd/GJListLayer.hpp"
 #include "../gd/CCScrollLayerExt.hpp"
 #include "../gd/CCMenuItemToggler.hpp"
+#include "ModInfoLayer.hpp"
 #include "DLLLayer.hpp"
 #include <direct.h>
 #include <MinHook.h>
@@ -19,7 +20,7 @@ static cocos2d::CCMenuItem* addc(
     cocos2d::CCPoint _pos,
     void (ModLdr::ModLayer::*_cb)(cocos2d::CCObject*)
 ) {
-    ButtonSprite* b = ButtonSprite::create(
+    CCMenuItemSpriteExtraGD* b = CCMenuItemSpriteExtraGD::create(
         _spr,
         _p,
         (cocos2d::SEL_MenuHandler)_cb
@@ -89,7 +90,7 @@ class ModListItem {
             moveUpSprite->setScale(.7f);
             moveUpSprite->setRotation(0);
 
-            auto upButton = ButtonSprite::create(
+            auto upButton = CCMenuItemSpriteExtraGD::create(
                 moveUpSprite,
                 menu,
                 nullptr
@@ -105,7 +106,7 @@ class ModListItem {
             moveDownSprite->setScale(.7f);
             moveDownSprite->setRotation(180);
 
-            auto downButton = ButtonSprite::create(
+            auto downButton = CCMenuItemSpriteExtraGD::create(
                 moveDownSprite,
                 menu,
                 nullptr
@@ -129,19 +130,20 @@ class ModListItem {
         }
 
         void showInfo(cocos2d::CCObject* pSender) {
-            std::string info;
-
             auto mod = reinterpret_cast<ModLdr::Manager::Mod*>(
                 static_cast<cocos2d::CCNode*>(pSender)->getUserData()
             );
 
-            info = "Path: <cy>" + mod->path + "</c>";
+            ModLdr::ModInfoLayer::create(mod)->show();
 
+            /*
             auto fl = FLAlertLayer::create(
                 nullptr, "Info", "OK", nullptr, 350.0f, 0, 0, info.c_str()
             );
 
             fl->show();
+
+            //*/
         }
 
         ModListItem(ModLdr::Manager::Mod* _mod, int _ix) {
@@ -454,7 +456,7 @@ void ModLdr::ModLayer::customSetup() {
 
     auto dlls = addc(
         this->m_pButtonMenu,
-        ButtonSpriteSpr::create("View Loaded DLLs", 0, false, "goldFont.fnt", "GJ_button_01.png", 0, 0.8f),
+        ButtonSprite::create("View Loaded DLLs", 0, false, "goldFont.fnt", "GJ_button_01.png", 0, 0.8f),
         { winSize.width / 2 - this->m_pButtonMenu->getPositionX(), -winSize.height + 48 },
         &ModLdr::ModLayer::showLoadedDLLs
     );

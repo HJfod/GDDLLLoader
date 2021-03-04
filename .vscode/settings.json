@@ -75,6 +75,7 @@
         "coroutine": "cpp",
         "mutex": "cpp",
         "optional": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "random": "cpp"
     }
 }

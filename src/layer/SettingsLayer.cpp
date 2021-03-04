@@ -118,8 +118,8 @@ void __fastcall ModLdr::SettingsLayer::initHook(cocos2d::CCNode* _layer) {
         txt->setPosition(x - 110, ssp + liftsfx);
     }
 
-    ButtonSprite* mods = ButtonSprite::create(
-        ButtonSpriteSpr::create("Mods", (int)lw, false, "goldFont.fnt", "GJ_button_01.png", bh, 1.0),
+    CCMenuItemSpriteExtraGD* mods = CCMenuItemSpriteExtraGD::create(
+        ButtonSprite::create("Mods", (int)lw, false, "goldFont.fnt", "GJ_button_01.png", bh, 1.0),
         bmenu,
         (cocos2d::SEL_MenuHandler)&SettingsLayer::showModList
     );
@@ -136,7 +136,12 @@ void ModLdr::SettingsLayer::showModList(cocos2d::CCObject* pSender) {
     auto l = ModLayer::create();
     auto p = static_cast<cocos2d::CCNode*>(pSender);
 
-    cocos2d::CCDirector::sharedDirector()->getRunningScene()->addChild(l);
+    static_cast<cocos2d::CCLayer*>(
+        cocos2d::CCDirector::sharedDirector()->getRunningScene()
+        ->getChildren()->objectAtIndex(0)
+    )->addChild(l);
+
+    l->setZOrder(100);
 
     auto slayer = static_cast<GJDropDownLayer*>(p->getUserData());
     

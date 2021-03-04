@@ -2,8 +2,6 @@
 
 #include "../offsets.hpp"
 
-#define PAD(size) char pad[size] = {};
-
 #pragma runtime_checks("s", off)
 class GJListLayer : public cocos2d::CCLayerColor {
     protected:

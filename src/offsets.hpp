@@ -8,7 +8,9 @@
     #pragma warning( pop )
 #endif
 
-#define PAD(size) char pad[size] = {};
+#define __STR_CAT___(str1, str2) str1##str2
+#define __STR_CAT__(str1, str2) __STR_CAT___(str1, str2)
+#define PAD(size) char __STR_CAT__(pad, __LINE__)[size] = {};
 
 #define offset_type inline const uintptr_t
 
