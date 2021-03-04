@@ -26,28 +26,20 @@ target_link_libraries(${PROJECT_NAME} submodules/MinHook/Release/minhook.x32)
 
 target_include_directories(
     ${PROJECT_NAME} PRIVATE
-#    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx
-#    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/include
-#    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/kazmath/include
-#    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/third_party/win32/OGLES
-#    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/win32
-#    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/extensions
-    submodules/cocos2d/cocos2dx
-    submodules/cocos2d/cocos2dx/include
-    submodules/cocos2d/cocos2dx/kazmath/include
-    submodules/cocos2d/cocos2dx/platform/third_party/win32/OGLES
-    submodules/cocos2d/cocos2dx/platform/win32
-    submodules/cocos2d/extensions
+    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx
+    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/include
+    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/kazmath/include
+    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/third_party/win32/OGLES
+    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/cocos2dx/platform/win32
+    submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/extensions
     submodules/MinHook/include
     submodules/nfd/src/include
 )
 
 target_link_libraries(
     ${PROJECT_NAME}
-    #${CMAKE_SOURCE_DIR}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/lib/cappuccino.lib
-    #${CMAKE_SOURCE_DIR}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/lib/libExtensions.lib
-    ${CMAKE_SOURCE_DIR}/submodules/cocos2d/cocos2dx/libcocos2d.lib
-    ${CMAKE_SOURCE_DIR}/submodules/cocos2d/extensions/libExtensions.lib
+    ${CMAKE_SOURCE_DIR}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/lib/cappuccino.lib
+    ${CMAKE_SOURCE_DIR}/submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/lib/libExtensions.lib
 )
 
 

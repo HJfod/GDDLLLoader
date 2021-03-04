@@ -4,14 +4,14 @@
 
 // thanks pie
 
-class CCMenuItemSpriteExtraGD : public cocos2d::CCMenuItem {
+class ButtonSprite : public cocos2d::CCMenuItem {
     public:
-        inline static CCMenuItemSpriteExtraGD* create(
+        inline static ButtonSprite* create(
             cocos2d::CCSprite* spr,
             cocos2d::CCMenu* targ,
             cocos2d::SEL_MenuHandler click
         ) {
-            auto pRet = reinterpret_cast<CCMenuItemSpriteExtraGD*(__thiscall*)(
+            auto pRet = reinterpret_cast<ButtonSprite*(__thiscall*)(
                 cocos2d::CCSprite*,
                 cocos2d::CCMenu*,
                 cocos2d::SEL_MenuHandler
@@ -22,16 +22,9 @@ class CCMenuItemSpriteExtraGD : public cocos2d::CCMenuItem {
             __asm add esp, 0x8
             return pRet;
         }
-
-        void setSizeMult(float mult) {
-			__asm movss xmm1, mult
-			return reinterpret_cast<void(__thiscall*)(CCMenuItemSpriteExtraGD*)>(
-				ModLdr::base + 0x19080
-			)(this);
-		}
 };
 
-class ButtonSprite : public cocos2d::CCSprite {
+class ButtonSpriteSpr : public cocos2d::CCSprite {
 	public:
 		/*PARAMS:
 		* caption - the button's caption.
@@ -42,7 +35,7 @@ class ButtonSprite : public cocos2d::CCSprite {
 		* height - height of button. put 0 for auto.
 		* scale - scale of the caption.
 		*/
-		inline static ButtonSprite* create(
+		inline static ButtonSpriteSpr* create(
             const char* caption,
             int width,
             bool absolute,
@@ -55,7 +48,7 @@ class ButtonSprite : public cocos2d::CCSprite {
 			__asm movss xmm3, scale
 
 			//arg 3 is always 0. dunno why it's not optimized out as a param
-			auto pRet = reinterpret_cast<ButtonSprite* (__fastcall*)(
+			auto pRet = reinterpret_cast<ButtonSpriteSpr* (__fastcall*)(
                 const char*,
                 int,
                 int,

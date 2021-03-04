@@ -7,6 +7,3 @@
 [submodule "submodules/nfd"]
 	path = submodules/nfd
 	url = https://github.com/mlabbe/nativefiledialog
-[submodule "submodules/cocos2d"]
-	path = submodules/cocos2d
-	url = https://github.com/HJfod/textureldr-cocos

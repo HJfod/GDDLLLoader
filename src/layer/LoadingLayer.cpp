@@ -20,7 +20,7 @@ void __fastcall ModLdr::LoadingLayer::initHook(cocos2d::CCLayer* _layer, void*, 
         "goldFont.fnt"
     );
 
-    label->setScale(.4f);
+    label->setScale(.4);
 
     auto winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
 
