@@ -64,7 +64,11 @@ bool ModLdr::ModInfoLayer::init(Manager::Mod* _mod) {
 	);
 	enableToggle->toggle(_mod->enabled);
 	enableToggle->setPosition(-45, -20);
-	enableToggle->setUserData(reinterpret_cast<void*>(_mod));
+	enableToggle->setUserData(reinterpret_cast<void*>(
+		new std::tuple<ModLdr::Manager::Mod*, ModInfoLayer*>(
+			_mod, this
+		)
+	));
 
 	this->m_pButtonMenu->addChild(enableToggle);
 
@@ -93,6 +97,7 @@ bool ModLdr::ModInfoLayer::init(Manager::Mod* _mod) {
 
 	this->setKeypadEnabled(true);
 	this->setTouchEnabled(true);
+	this->setTouchPriority(100);
 
 	return true;
 }
@@ -102,14 +107,23 @@ void ModLdr::ModInfoLayer::onClose(cocos2d::CCObject* pSender) {
 		reinterpret_cast<cocos2d::CCNode*>(pSender)->getUserData()
 	);
 
+	if (layer->callback_ != nullptr)
+		layer->callback_();
+
 	layer->setKeypadEnabled(false);
 	layer->removeFromParentAndCleanup(true);
 }
 
-ModLdr::ModInfoLayer* ModLdr::ModInfoLayer::create(Manager::Mod* _mod) {
+ModLdr::ModInfoLayer* ModLdr::ModInfoLayer::create(
+	Manager::Mod* _mod,
+	std::function<void()> _cb,
+	std::function<void(bool)> _c_cb
+) {
 	ModInfoLayer* pRet = new ModInfoLayer();
 
 	if (pRet && pRet->init(_mod)) {
+		pRet->callback_ = _cb;
+		pRet->checkbox_cb_ = _c_cb;
 		pRet->autorelease();
 		return pRet;
 	}

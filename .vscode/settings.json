@@ -75,6 +75,11 @@
         "coroutine": "cpp",
         "mutex": "cpp",
         "optional": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "csignal": "cpp",
+        "forward_list": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "valarray": "cpp"
     }
 }

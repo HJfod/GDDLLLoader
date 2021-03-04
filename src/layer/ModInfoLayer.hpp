@@ -11,8 +11,15 @@ namespace ModLdr {
 
             void onClose(cocos2d::CCObject*);
 
+            std::function<void()> callback_;
+            std::function<void(bool)> checkbox_cb_;
+
         public:
-            static ModInfoLayer* create(Manager::Mod*);
+            static ModInfoLayer* create(
+                Manager::Mod*,
+                std::function<void()> = nullptr,
+                std::function<void(bool)> = nullptr
+            );
     };
 }
 

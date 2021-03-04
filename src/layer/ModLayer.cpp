@@ -40,7 +40,7 @@ class ModListItem {
     public:
         static const int labelTag = 5;
 
-        cocos2d::CCMenu* getActual(cocos2d::CCSize _size) {
+        cocos2d::CCMenu* getActual(ModLdr::ModLayer* _layer, cocos2d::CCSize _size) {
             auto menu = cocos2d::CCMenu::create();
 
             menu->setContentSize(_size);
@@ -65,8 +65,6 @@ class ModListItem {
             
             bmItem->setTag(labelTag);
 
-            bmItem->setUserData(reinterpret_cast<void*>(this->m_mod));
-
             menu->addChild(bmItem);
 
 
@@ -75,6 +73,14 @@ class ModListItem {
                 (cocos2d::SEL_MenuHandler)&ModLdr::ModLayer::toggleMod,
                 .8f
             );
+
+            bmItem->setUserData(reinterpret_cast<void*>(
+                new std::tuple<ModLdr::ModLayer*, ModLdr::Manager::Mod*, CCMenuItemToggler*>(
+                    _layer,
+                    this->m_mod,
+                    enabledToggle
+                )
+            ));
 
             enabledToggle->toggle(this->m_mod->enabled);
 
@@ -130,11 +136,27 @@ class ModListItem {
         }
 
         void showInfo(cocos2d::CCObject* pSender) {
-            auto mod = reinterpret_cast<ModLdr::Manager::Mod*>(
+            auto tuple = *reinterpret_cast<std::tuple<
+                ModLdr::ModLayer*,
+                ModLdr::Manager::Mod*,
+                CCMenuItemToggler*
+            >*>(
                 static_cast<cocos2d::CCNode*>(pSender)->getUserData()
             );
 
-            ModLdr::ModInfoLayer::create(mod)->show();
+            auto layer = std::get<0>(tuple);
+            auto check = std::get<2>(tuple);
+
+	        layer->setTouchEnabled(false);
+
+            ModLdr::ModInfoLayer::create(
+                std::get<1>(tuple), [layer]() -> void {
+                    layer->setTouchEnabled(true);
+                },
+                [check](bool _b) -> void {
+                    check->toggle(_b);
+                }
+            )->show();
         }
 
         ModListItem(ModLdr::Manager::Mod* _mod, int _ix) {
@@ -148,12 +170,12 @@ static constexpr const int noModsTag = 421;
 
 bool shownInfoAboutBasicDLLs = false;
 
-void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
-    if (_list->getChildByTag(modListTag) != nullptr)
-        _list->removeChildByTag(modListTag);
+void ModLdr::ModLayer::renderList(cocos2d::CCSize _size) {
+    if (this->m_pListLayer->getChildByTag(modListTag) != nullptr)
+        this->m_pListLayer->removeChildByTag(modListTag);
 
-    if (_list->getChildByTag(noModsTag) != nullptr)
-        _list->removeChildByTag(noModsTag);
+    if (this->m_pListLayer->getChildByTag(noModsTag) != nullptr)
+        this->m_pListLayer->removeChildByTag(noModsTag);
 
     // wow this code is terrible
     // but it works so eh
@@ -188,7 +210,10 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     // why do i add 25 to the height? because for
     // some god-knows reason the list is otherwise
     // wrongly positioned! why? don't know!
-    auto modListView = CustomListView::create(dummyArray, _size.width, _size.height + 25, 0x0);
+
+    auto modListView = CustomListView::create(
+        dummyArray, _size.width, _size.height + 25, 0x0
+    );
 
     // get children
     auto list  = getChild<cocos2d::CCLayer*>(modListView, 0);
@@ -231,7 +256,7 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
 
         // generate content for layer from our own
         // ModMenuItem class
-        childfg->addChild(actualList.at(i)->getActual(childpar->getScaledContentSize()));
+        childfg->addChild(actualList.at(i)->getActual(this, childpar->getScaledContentSize()));
         childfg->setZOrder(101);
 
         // resize foreground to match new item height
@@ -249,13 +274,24 @@ void renderList(GJListLayer* _list, cocos2d::CCSize _size) {
     // resize list to match the size of our new resized list items
     listc->setContentSize({ listc->getContentSize().width, dummyArray->count() * height });
 
+    float correction = 0.0f;
+
+    // The list is wrongly positioned if i don't
+    // do this when there are 1-2 items!
+    // Why? Fuck if I know!
+
+    if (dummyArray->count() == 1)
+        correction = height;
+    if (dummyArray->count() == 2)
+        correction = -height;
+
     // move list scroll position to the top
-    listc->setPositionY(dummyArray->count() * -height + _size.height);
+    listc->setPositionY(dummyArray->count() * -height + _size.height + correction);
 
     // set tag so we can remove the modlist on refresh
     modListView->setTag(modListTag);
 
-    _list->addChild(modListView);
+    this->m_pListLayer->addChild(modListView);
 
     // clean up list
     while(!actualList.empty()) delete actualList.back(), actualList.pop_back();
@@ -318,13 +354,13 @@ void ModLdr::ModLayer::addMod(cocos2d::CCObject* pSender) {
         std::filesystem::copy_file(path, fname);
         ModLdr::Manager::loadMod(utf8_decode(fname));
 
-        auto list = reinterpret_cast<GJListLayer*>(
+        auto list = reinterpret_cast<ModLayer*>(
             static_cast<cocos2d::CCNode*>(pSender)->getUserData()
         );
 
-        list->setColor(listBGLight);
-        list->setOpacity(255);
-        renderList(list, list->getScaledContentSize());
+        list->m_pListLayer->setColor(listBGLight);
+        list->m_pListLayer->setOpacity(255);
+        list->renderList(list->m_pListLayer->getScaledContentSize());
 
         FLAlertLayer::create(
             nullptr, "Warning", "OK", nullptr, 250.0, 0, 0,
@@ -362,13 +398,13 @@ void ModLdr::ModLayer::showCredits(cocos2d::CCObject* pSender) {
 void ModLdr::ModLayer::reloadMods(cocos2d::CCObject* pSender) {
     Manager::loadMods();
 
-    auto list = reinterpret_cast<GJListLayer*>(
+    auto list = reinterpret_cast<ModLayer*>(
         static_cast<cocos2d::CCNode*>(pSender)->getUserData()
     );
 
-    list->setColor(listBGLight);
-    list->setOpacity(255);
-    renderList(list, list->getScaledContentSize());
+    list->m_pListLayer->setColor(listBGLight);
+    list->m_pListLayer->setOpacity(255);
+    list->renderList(list->m_pListLayer->getScaledContentSize());
 
     FLAlertLayer::create(
         nullptr, "Warning", "OK", nullptr, 250.0, 0, 0,
@@ -428,7 +464,7 @@ void ModLdr::ModLayer::customSetup() {
     } else {
         this->m_pListLayer->setColor(listBGLight);
         this->m_pListLayer->setOpacity(255);
-        renderList(this->m_pListLayer, lrSize);
+        renderList(this->m_pListLayer->getScaledContentSize());
     }
     
 
@@ -453,7 +489,7 @@ void ModLdr::ModLayer::customSetup() {
         { winSize.width - 70, -winSize.height + 64 },
         &ModLdr::ModLayer::addMod
     );
-    add->setUserData(this->m_pListLayer);
+    add->setUserData(this);
 
     addc(
         this->m_pButtonMenu,
@@ -468,7 +504,7 @@ void ModLdr::ModLayer::customSetup() {
         { winSize.width - 70, -winSize.height + 192 },
         &ModLdr::ModLayer::reloadMods
     );
-    update->setUserData(this->m_pListLayer);
+    update->setUserData(this);
 
     auto dlls = addc(
         this->m_pButtonMenu,
