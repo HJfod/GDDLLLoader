@@ -34,6 +34,7 @@ target_include_directories(
     submodules/CappuccinoSDK/template/default-cpp/cappuccino-sdk/incl/extensions
     submodules/MinHook/include
     submodules/nfd/src/include
+    submodules/gd/include
 )
 
 target_link_libraries(
@@ -45,13 +46,17 @@ target_link_libraries(
 
 # runner
 
-add_executable(${RUNNER_NAME} runner.cpp)
+if (COMPILE_RUNNER)
 
-set_source_files_properties( runner.cpp PROPERTIES LANGUAGE CXX )
-set_source_files_properties( runner.cpp PROPERTIES CXX_STANDARD 17 )
-set_source_files_properties( runner.cpp PROPERTIES CXX_STANDARD_REQUIRED ON )
+    add_executable(${RUNNER_NAME} runner.cpp)
 
-target_link_libraries(${RUNNER_NAME} WtsApi32)
+    set_source_files_properties( runner.cpp PROPERTIES LANGUAGE CXX )
+    set_source_files_properties( runner.cpp PROPERTIES CXX_STANDARD 17 )
+    set_source_files_properties( runner.cpp PROPERTIES CXX_STANDARD_REQUIRED ON )
 
-add_definitions(${PROJECT_SOURCE_DIR}/runner.cpp "-DNOMSGBOX")
+    target_link_libraries(${RUNNER_NAME} WtsApi32)
+
+    add_definitions(${PROJECT_SOURCE_DIR}/runner.cpp "-DNOMSGBOX")
+
+endif()
 

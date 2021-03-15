@@ -154,9 +154,17 @@ enum err {
     CANT_OPEN_GD
 };
 
-const char* req_files[2] = {
+const char* req_files[8] = {
     "ModLdr.dll",
-    "DL_folder.png|resources"
+    "DL_folder.png|resources",
+    
+    "DL_bell.png|resources",
+    "DL_bell-hd.png|resources",
+    "DL_bell-uhd.png|resources",
+
+    "DL_notif-uhd.png|resources",
+    "DL_notif-hd.png|resources",
+    "DL_notif.png|resources",
 };
 
 int throwErr(std::string _msg, int _err) {

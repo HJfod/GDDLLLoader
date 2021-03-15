@@ -7,3 +7,6 @@
 [submodule "submodules/nfd"]
 	path = submodules/nfd
 	url = https://github.com/mlabbe/nativefiledialog
+[submodule "submodules/gd"]
+	path = submodules/gd
+	url = https://github.com/poweredbypie/gd.h

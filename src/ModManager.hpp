@@ -1,81 +1,118 @@
 #pragma once
 
+#include "offsets.hpp"
 #include <string>
 #include <vector>
-#include <Windows.h>
-
-inline std::string utf8_encode(const std::wstring &wstr) {
-    if( wstr.empty() ) return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-    std::string strTo( size_needed, 0 );
-    WideCharToMultiByte                  (CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-    return strTo;
-}
-
-inline std::wstring utf8_decode(const std::string &str) {
-    if( str.empty() ) return std::wstring();
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
-    std::wstring wstrTo( size_needed, 0 );
-    MultiByteToWideChar                  (CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
-    return wstrTo;
-}
 
 namespace ModLdr {
-    namespace Manager {
-        struct Mod {
+    class Mod {
+        public:
             enum Type {
                 DLL,
-                ModLdrDLL
+                ModLdr
             };
 
-            std::string name;
-            std::wstring wname;
+            enum LoadTime {
+                Immediate,
+                Splash,
+                Undefined
+            };
 
+        protected:
             std::string path;
-            std::wstring wpath;
+            std::string name;
 
-            bool enabled;
             bool loaded;
+            bool enabled;
+
             Type type;
+            LoadTime loadtime;
 
-            HMODULE handle;
+            HMODULE module;
 
-            Mod(
-                std::wstring _wpath,
-                Type _type,
-                HMODULE _handle = nullptr,
-                bool _enabled = true
-            ) {
-                this->wpath = _wpath;
-                this->path = utf8_encode(_wpath);
+        public:
+            Mod(std::string const&, std::string const&, bool const&);
 
-                std::wstring wn;
-                if (_wpath.find(L"\\") != std::wstring::npos)
-                    wn = this->wpath.substr(this->wpath.find_last_of(L"\\") + 1);
-                else wn = this->wpath;
+            bool load();
+            bool unload();
+            void enable(bool);
 
-                this->wname = wn.substr(0, wn.find_first_of(L"."));
-                this->name = utf8_encode(this->wname);
+            Type getType();
+            LoadTime wantsToLoadWhen();
+    };
 
-                this->enabled = _enabled;
-                this->type = _type;
+    struct Notification {
+        enum Type {
+            // for errors that break the whole modloader
+            Fatal,
 
-                this->loaded = _enabled;
-                this->handle = _handle;
-            }
+            // for errors that break individual mods
+            Critical,
+
+            // for errors that could pose an issue
+            Notable,
+
+            // for errors that likely don't pose an issue
+            Trivial,
+
+            // for information
+            Info
         };
 
-        inline std::vector<Mod*> mods;
-        constexpr static const char* modFolder = "mods";
+        Type type;
+        std::string info;
+        std::string sender;
+        std::chrono::time_point<std::chrono::system_clock> time;
 
-        std::tuple<int, int, int> loadMods();
-        bool loadMod(std::wstring);
-        bool unloadMod(Mod*);
-        bool enableMod(Mod*, bool);
-        void cleanup();
+        inline Notification() {
+            this->type = Type::Info;
+            this->info = "";
+            this->sender = "ModLdr";
+            this->time = std::chrono::system_clock::now();
+        }
 
-        Mod* getMod(std::wstring);
-        Mod* getMod(std::string);
-    }
+        inline Notification(Type _type, std::string _info) {
+            this->type = _type;
+            this->info = _info;
+            this->sender = "ModLdr";
+            this->time = std::chrono::system_clock::now();
+        };
+
+        inline Notification(Type _type, std::string _info, std::string _send) {
+            this->type = _type;
+            this->info = _info;
+            this->sender = _send;
+            this->time = std::chrono::system_clock::now();
+        }
+    };
+
+    class Manager {
+        static constexpr const char* modFolder = "mods";
+        static constexpr const char* modFile = "ModLdr.plist";
+
+        static Manager* shared_;
+        DS_Dictionary* data_;
+
+        std::vector<Notification> notifications_;
+        std::vector<Notification> unreadNotifications_;
+        std::vector<Mod*> scheduledForSplashMods_;
+        std::vector<Mod*> mods_;
+
+        void scheduleError(Notification);
+        void scheduleForSplash(Mod*);
+        
+        public:
+            Manager(const char*, bool);
+            ~Manager();
+
+            static Manager* initShared();
+            static Manager* getShared();
+
+            std::vector<Notification> getNotifications();
+            unsigned int getUnreadNotificationCount();
+            void markNotificationsAsRead();
+
+            std::vector<Mod*> getScheduledForSplash();
+    };
 }
 

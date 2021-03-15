@@ -1,4 +1,4 @@
-#include "src/ModLdr.hpp"
+ #include "src/ModLdr.hpp"
 #include <Windows.h>
 
 void  __declspec(dllexport) zstub(){}
@@ -29,7 +29,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID) {
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH: break;
         case DLL_PROCESS_DETACH:
-            CreateThread(0, 0x1000, unload_thread, hModule, 0, 0);
+            #ifndef MODLDR_CONSOLE
+                CreateThread(0, 0x1000, unload_thread, hModule, 0, 0);
+            #endif
             break;
     }
     
