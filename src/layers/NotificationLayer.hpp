@@ -20,13 +20,13 @@ class CustomListViewHook {
 
     protected:
 
-        inline static cocos2d::CCNode* (__thiscall* getListCell)(gd::CustomListView*, uintptr_t);
+        inline static cocos2d::CCNode* (__thiscall* getListCell)(gd::CustomListView*, const char*);
         inline static void (__thiscall* loadCell)(gd::CustomListView*, gd::TableViewCell*, int);
-        inline static void (__fastcall* setupList)(gd::CustomListView*);
+        //inline static void (__fastcall* setupList)(gd::CustomListView*);
 
-        static cocos2d::CCNode* __fastcall getListCellHook(gd::CustomListView*, uintptr_t, uintptr_t);
+        static cocos2d::CCNode* __fastcall getListCellHook(gd::CustomListView*, uintptr_t, const char*);
         static void __fastcall loadCellHook(gd::CustomListView*, uintptr_t, gd::TableViewCell*, int);
-        static void __fastcall setupListHook(gd::CustomListView*);
+        //static void __fastcall setupListHook(gd::CustomListView*);
 
         static int getType(gd::CustomListView*);
     
@@ -44,11 +44,11 @@ class CustomListViewHook {
                 &CustomListViewHook::getListCell
             );
 
-            makeHook(
-                gd::base + 0x58870,
-                CustomListViewHook::setupListHook,
-                &CustomListViewHook::setupList
-            );
+            //makeHook(
+            //    gd::base + 0x58870,
+            //    CustomListViewHook::setupListHook,
+            //    &CustomListViewHook::setupList
+            //);
 
             return true;
         };

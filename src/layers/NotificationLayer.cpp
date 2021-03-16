@@ -15,41 +15,49 @@ void __fastcall CustomListViewHook::loadCellHook(
 ) {
     switch (getType(_this)) {
         case NotificationType: {
-            std::cout << _node->getChildrenCount() << "\n";
+            std::cout << "fuck " << _node->getChildrenCount() << "\n";
 
             auto n = dynamic_cast<NotificationCell*>(_node);
 
             std::cout << n << "\n";
-
-            if (n) {
-                std::cout << n->getNotification().info << "\n";
-            }
         } break;
         default:
             loadCell(_this, _node, _ix);
     }
 }
 
-void __fastcall CustomListViewHook::setupListHook(gd::CustomListView* _this) {
-    switch (getType(_this)) {
-//        case NotificationType: {
-
-//        } break;
-        default:
-            setupList(_this);
-    }
-};
+// void __fastcall CustomListViewHook::setupListHook(gd::CustomListView* _this) {
+    // setupList(_this);
+// };
 
 cocos2d::CCNode* __fastcall CustomListViewHook::getListCellHook(
     gd::CustomListView* _this,
     uintptr_t,
-    uintptr_t _name
+    const char* _name
 ) {
-    return getListCell(_this, _name);
+    std::cout << "getListCell " << _name << "\n";
+    std::cout << _this->getListWidth() << "\n";
+
+    switch (getType(_this)) {
+        case NotificationType: {
+            std::cout << "NotificationType\n";
+
+            return new NotificationCell(
+                {
+                    ModLdr::Notification::Info,
+                    _name
+                },
+                _this->getListWidth()
+            );
+        } break;
+
+        default:
+            return getListCell(_this, _name);
+    }
 }
 
 NotificationCell::NotificationCell(ModLdr::Notification _notif, float _width)
-    : gd::TableViewCell(_notif.info.c_str(), _width, 40.0f)
+    : gd::TableViewCell(_notif.info.c_str(), _width, 69.0f)
 {
     this->m_notif = _notif;
 }

@@ -8,6 +8,7 @@ call :setESC
 
 set PROJECT_NAME=ModLdr
 set COMPILE_RUNNER=0
+set CONFIG=RelWithDebInfo
 
 if not exist submodules\ (
     git submodule update
@@ -40,10 +41,10 @@ cd build
 
 echo %ESC%[93m • Generating project...%ESC%[0m
 
-del Release\%PROJECT_NAME%.dll
+del %CONFIG%\%PROJECT_NAME%.dll
 
 if %COMPILE_RUNNER%==1 (
-    del Release\OneTimeRunner.exe
+    del %CONFIG%\OneTimeRunner.exe
 
     cmake .. -A Win32 -Thost=x86 -DCOMPILE_RUNNER=True
 ) else (
@@ -53,27 +54,25 @@ if %COMPILE_RUNNER%==1 (
 echo.
 echo %ESC%[92m • Compiling library...%ESC%[0m
 
-msbuild %PROJECT_NAME%.sln /p:Configuration=Release /verbosity:minimal /p:PlatformTarget=x86
+msbuild %PROJECT_NAME%.sln /p:Configuration=%CONFIG% /verbosity:minimal /p:PlatformTarget=x86
 
-rem clang++ ../runner.cpp -std=c++20 -o Release/OneTimeRunner.exe -lWtsApi32 -luser32 -DNOMSGBOX
-
-if not exist Release\%PROJECT_NAME%.dll (
+if not exist %CONFIG%\%PROJECT_NAME%.dll (
     rem fuck you
     echo %ESC%[91m • somwin went fuwcy wuwcy.... so sowwy.qwq... wil fix soon promis ^>w^<%ESC%[0m
     goto done
 )
 
-xcopy /y ..\resources\DL_folder.png Release\DL_folder.png*
-xcopy /y ..\resources\DL_bell.png Release\DL_bell.png*
-xcopy /y ..\resources\DL_bell-hd.png Release\DL_bell-hd.png*
-xcopy /y ..\resources\DL_bell-uhd.png Release\DL_bell-uhd.png*
-xcopy /y ..\resources\DL_notif-uhd.png Release\DL_notif-uhd.png*
-xcopy /y ..\resources\DL_notif-hd.png Release\DL_notif-hd.png*
-xcopy /y ..\resources\DL_notif.png Release\DL_notif.png*
+xcopy /y ..\resources\DL_folder.png %CONFIG%\DL_folder.png*
+xcopy /y ..\resources\DL_bell.png %CONFIG%\DL_bell.png*
+xcopy /y ..\resources\DL_bell-hd.png %CONFIG%\DL_bell-hd.png*
+xcopy /y ..\resources\DL_bell-uhd.png %CONFIG%\DL_bell-uhd.png*
+xcopy /y ..\resources\DL_notif-uhd.png %CONFIG%\DL_notif-uhd.png*
+xcopy /y ..\resources\DL_notif-hd.png %CONFIG%\DL_notif-hd.png*
+xcopy /y ..\resources\DL_notif.png %CONFIG%\DL_notif.png*
 
 :run
 
-if exist Release\OneTimeRunner.exe (
+if exist %CONFIG%\OneTimeRunner.exe (
     echo ✔️  Runner compiled
 ) else (
     rem fuck you
@@ -84,7 +83,7 @@ if exist Release\OneTimeRunner.exe (
 echo.
 echo %ESC%[94m • Running...%ESC%[0m
 
-cd Release
+cd %CONFIG%
 
 OneTimeRunner.exe
 
